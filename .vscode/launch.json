@@ -1,0 +1,24 @@
+{
+    // Use IntelliSense to learn about possible Node.js debug attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "program": "${workspaceRoot}/index.js",
+            "env": {
+                "PORT": "1310",
+                "ENV": "local",
+                "APP_NAME": "InnoHouse.App",
+                "APP_ID": "inno-house-id",
+                "MASTER_KEY": "inno-house-masterkey",
+                "SERVER_URL": "http://localhost:1310/parse",
+                "PARSE_MOUNT": "/parse",
+                "DATABASE_URI": "mongodb://iamroot:%21%23%24%25%5E%26DFGHCVBerty789oijnbadmin@192.168.1.28:27017/inno-house-internal?authSource=admin&3t.uriVersion=2&3t.connectionMode=direct&readPreference=primary"
+            }
+        }
+    ]
+}
