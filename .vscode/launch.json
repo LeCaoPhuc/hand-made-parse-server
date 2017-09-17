@@ -10,12 +10,12 @@
             "name": "Launch Program",
             "program": "${workspaceRoot}/index.js",
             "env": {
-                "PORT": "1310",
+                "PORT": "3000",
                 "ENV": "local",
-                "APP_NAME": "InnoHouse.App",
-                "APP_ID": "inno-house-id",
-                "MASTER_KEY": "inno-house-masterkey",
-                "SERVER_URL": "http://localhost:1310/parse",
+                "APP_NAME": "HandMade.App",
+                "APP_ID": "hand-made-id",
+                "MASTER_KEY": "hand-made-masterkey",
+                "SERVER_URL": "http://localhost:3000/parse",
                 "PARSE_MOUNT": "/parse",
                 "DATABASE_URI": "mongodb://iamroot:%21%23%24%25%5E%26DFGHCVBerty789oijnbadmin@192.168.1.28:27017/inno-house-internal?authSource=admin&3t.uriVersion=2&3t.connectionMode=direct&readPreference=primary"
             }

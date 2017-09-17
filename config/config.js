@@ -24,8 +24,8 @@ configs.dev = {
 }
 
 configs.local = {
-    port: 1310,
-    httpsPort: 1311,
+    port: 3000,
+    httpsPort: 3001,
     dashboardUsers: [{
         user: 'root',
         pass: 'r00t'
@@ -36,7 +36,7 @@ configs.local = {
         appId: process.env.APP_ID || 'hand-made-id',
         appName: 'HandMade.App',
         masterKey: 'hand-made-masterkey', //Add your master key here. Keep it secret!
-        serverURL: process.env.SERVER_URL || `http://localhost:1310/parse`,  // Don't forget to change to https if needed
+        serverURL: process.env.SERVER_URL || `http://localhost:3000/parse`,  // Don't forget to change to https if needed
         // liveQuery: {
         //   classNames: ["Posts", "Comments"] // List of classes to support for query subscriptions
         // }
