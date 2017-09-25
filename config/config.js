@@ -10,7 +10,8 @@ configs.dev = {
         pass: 'r00t'
     }],
     parseServer: {
-        databaseURI: 'mongodb://admin:Phuc4592603!@#@handmade-shard-00-00-jzqxp.mongodb.net:27017,handmade-shard-00-01-jzqxp.mongodb.net:27017,handmade-shard-00-02-jzqxp.mongodb.net:27017/test?ssl=true&replicaSet=Handmade-shard-0&authSource=admin',
+        //  databaseURI : `mongodb://root:r00t@cluster0-shard-00-00-jzqxp.mongodb.net:27017,cluster0-shard-00-01-jzqxp.mongodb.net:27017,cluster0-shard-00-02-jzqxp.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin`,
+        databaseURI: 'mongodb://root:r00t@cluster0-shard-00-00-iogft.mongodb.net:27017,cluster0-shard-00-01-iogft.mongodb.net:27017,cluster0-shard-00-02-iogft.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin',
         cloud: path.resolve('./cloud/main.js'),
         appId: process.env.APP_ID || 'hand-made-id',
         appName: 'HandMade.App',
@@ -31,6 +32,7 @@ configs.local = {
         pass: 'r00t'
     }],
     parseServer: {
+        // databaseURI : `mongodb://root:r00t@cluster0-shard-00-00-jzqxp.mongodb.net:27017,cluster0-shard-00-01-jzqxp.mongodb.net:27017,cluster0-shard-00-02-jzqxp.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin`,
         databaseURI: 'mongodb://root:r00t@cluster0-shard-00-00-iogft.mongodb.net:27017,cluster0-shard-00-01-iogft.mongodb.net:27017,cluster0-shard-00-02-iogft.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin',
         cloud: path.resolve('./cloud/main.js'),
         appId: process.env.APP_ID || 'hand-made-id',
