@@ -22,10 +22,6 @@ function success(req, res, message, data) {
         message: message,
         data: data
     }
-    if (req && req.params && req.params.timestamp)
-        responseData.timestamp = req.params.timestamp;
-    else
-        responseData.timestamp = req.headers.timestamp;
     if (res) res.success(responseData);
     else return responseData;
 }
@@ -37,10 +33,6 @@ function error(req, res, message, error, code) {
         error: error,
         code: code
     }
-    if (req && req.params && req.params.timestamp)
-        responseData.timestamp = req.headers.timestamp;
-    else
-        responseData.timestamp = req.headers.timestamp;
     if (res) {
         if (code) {
             res.error(code, responseData);
@@ -50,8 +42,8 @@ function error(req, res, message, error, code) {
     }
     else return responseData;
 }
-function notLogin(res) {
-    error(res, 'you are not login');
+function notLogin(req,res) {
+    error(req,res, 'you are not login');
 }
 module.exports = {
     getUserById,
