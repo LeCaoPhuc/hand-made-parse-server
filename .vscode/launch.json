@@ -12,8 +12,8 @@
             "env": {
                 "PORT": "3000",
                 "ENV": "local",
-                "APP_NAME": "HandMade.App",
-                "APP_ID": "hand-made-id",
+                "APP_NAME": "LuanVan.App",
+                "APP_ID": "luan-van-app-id",
                 "MASTER_KEY": "hand-made-masterkey",
                 "SERVER_URL": "http://localhost:3000/parse",
                 "PARSE_MOUNT": "/parse",
