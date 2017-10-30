@@ -265,17 +265,27 @@ Parse.Cloud.define("getUserInfo", function(req,res){
    var userQuery = new Parse.Query(Parse.User);
    userQuery.get(userId, { useMasterKey: true })
    .then(function (user) {
-       if(user) {
-            var userInfo = {
-                id: user.id
-            };
-            userInfo = tools.cloneUserInfo(user,['username','first_name','last_name','email','phone_number','user_type','address'],function(userCloneJSON){
-                return userCloneJSON;
+        if(user) {
+            var userInfo = tools.cloneUserInfo(user,['username','first_name','last_name','email','phone_number','user_type','address'])
+            checkUserHasShop(user)
+            .then(function(shop){
+                if(shop) {
+                    tools.success(req,res,'get user info success',{
+                        user : userInfo,
+                        shop : shop
+                    });
+                }
+                else {
+                     tools.success(req,res,'get user info success',userInfo);
+                }
+            })
+            .catch(function(error){
+                tools.error(req,res,'error check user has shop', error);
             })
         }
         else {
-            
-        }
+             tools.error(req,res,'user not found', {});
+        } 
     })
    .catch(function(error){
         tools.error(req,res,'error get user info', error);

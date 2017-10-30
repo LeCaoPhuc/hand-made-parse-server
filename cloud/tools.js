@@ -3,7 +3,7 @@ function getUserById(userId) {
     var userQuery = new Parse.Query('User');
     return userQuery.get(userId);
 }
-function cloneUserInfo(user, fields, customFunction) {
+function cloneUserInfo(user, fields) {
     var userClone = new Parse.User();
     userClone.id = user.id;
     for (var i in fields) {
@@ -12,7 +12,6 @@ function cloneUserInfo(user, fields, customFunction) {
     var userCloneJSON = userClone.toJSON();
     userCloneJSON.id = userClone.id;
     userCloneJSON.className = userClone.className;
-    if (customFunction) customFunction(userCloneJSON);
     userClone = Parse.Object.fromJSON(userCloneJSON);
     if (userClone.get('avatar')) userClone.get('avatar')._url = config.httpsDomain + userClone.get('avatar').url().split('parse')[1];
     return userClone;
