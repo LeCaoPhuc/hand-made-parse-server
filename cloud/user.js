@@ -71,7 +71,7 @@ var sendMail = function(email, code, date) {
         });
     });
 };
-Parse.Cloud.define("requestpassword", function(req, res) {
+Parse.Cloud.define("requestPassword", function(req, res) {
     var email = req.params.email;
     var code = utils.randomValueHex(6);
     var date = new Date(moment().utc().toDate().getTime() + 86400000);
@@ -94,7 +94,7 @@ Parse.Cloud.define("requestpassword", function(req, res) {
          tools.error(req,res,'requestpassword catch',error);
     });
 });
-Parse.Cloud.define("resetpassword", function(req, res) {
+Parse.Cloud.define("resetPassword", function(req, res) {
     var email = req.params.email;
     var password = req.params.password;
     var code = req.params.verifyCode;
@@ -223,7 +223,7 @@ Parse.Cloud.define('editProfile', function (req, res) {
         tools.error(req, res, 'editProfile error', err);
     })
 });
-Parse.Cloud.define("signup", function(req,res) {
+Parse.Cloud.define("signUp", function(req,res) {
     var user = new Parse.User();
     var username = req.params.username;
     var firstName = req.params.first_name;
