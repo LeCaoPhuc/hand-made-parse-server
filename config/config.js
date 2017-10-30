@@ -13,9 +13,9 @@ configs.dev = {
         //  databaseURI : `mongodb://root:r00t@cluster0-shard-00-00-jzqxp.mongodb.net:27017,cluster0-shard-00-01-jzqxp.mongodb.net:27017,cluster0-shard-00-02-jzqxp.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin`,
         databaseURI: 'mongodb://root:r00t@cluster0-shard-00-00-iogft.mongodb.net:27017,cluster0-shard-00-01-iogft.mongodb.net:27017,cluster0-shard-00-02-iogft.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin',
         cloud: path.resolve('./cloud/main.js'),
-        appId: process.env.APP_ID || 'hand-made-id',
-        appName: 'HandMade.App',
-        masterKey: 'hand-made-masterkey', //Add your master key here. Keep it secret!
+        appId: process.env.APP_ID || 'luan-van-app-id',
+        appName: 'LuanVan.App',
+        masterKey: 'luan-van-masterkey', //Add your master key here. Keep it secret!
         serverURL: process.env.SERVER_URL || `http://192.168.1.28:1300/parse`,  // Don't forget to change to https if needed
         // liveQuery: {
         //   classNames: ["Posts", "Comments"] // List of classes to support for query subscriptions
@@ -35,9 +35,9 @@ configs.local = {
         // databaseURI : `mongodb://root:r00t@cluster0-shard-00-00-jzqxp.mongodb.net:27017,cluster0-shard-00-01-jzqxp.mongodb.net:27017,cluster0-shard-00-02-jzqxp.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin`,
         databaseURI: 'mongodb://root:r00t@cluster0-shard-00-00-iogft.mongodb.net:27017,cluster0-shard-00-01-iogft.mongodb.net:27017,cluster0-shard-00-02-iogft.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin',
         cloud: path.resolve('./cloud/main.js'),
-        appId: process.env.APP_ID || 'hand-made-id',
-        appName: 'HandMade.App',
-        masterKey: 'hand-made-masterkey', //Add your master key here. Keep it secret!
+        appId: process.env.APP_ID || 'luan-van-app-id',
+        appName: 'LuanVan.App',
+        masterKey: 'luan-van-masterkey', //Add your master key here. Keep it secret!
         serverURL: process.env.SERVER_URL || `http://localhost:3000/parse`,  // Don't forget to change to https if needed
         // liveQuery: {
         //   classNames: ["Posts", "Comments"] // List of classes to support for query subscriptions
