@@ -34,7 +34,8 @@ configs.local = {
     }],
     parseServer: {
         // databaseURI : `mongodb://root:r00t@cluster0-shard-00-00-jzqxp.mongodb.net:27017,cluster0-shard-00-01-jzqxp.mongodb.net:27017,cluster0-shard-00-02-jzqxp.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin`,
-        databaseURI: 'mongodb://root:r00t@cluster0-shard-00-00-jzqxp.mongodb.net:27017,cluster0-shard-00-01-jzqxp.mongodb.net:27017,cluster0-shard-00-02-jzqxp.mongodb.net:27017/luanvan?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin',
+        // databaseURI: 'mongodb://root:r00t@cluster0-shard-00-00-jzqxp.mongodb.net:27017,cluster0-shard-00-01-jzqxp.mongodb.net:27017,cluster0-shard-00-02-jzqxp.mongodb.net:27017/luanvan?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin',
+        databaseURI: 'mongodb://127.0.0.1:27017/luanvan_local',
         cloud: path.resolve('./cloud/main.js'),
         appId: process.env.APP_ID || 'luan-van-app-id',
         appName: 'LuanVan.App',
