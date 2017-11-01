@@ -36,7 +36,7 @@ Parse.Cloud.define('order', function(req,res) {
     // var order = new Order();
     // order.set('')
     // var query = new Parse.Query('')
-    autoCreateOrderNumber(user)
+    autoCreateOrderNumber(shop)
     .then(function(res){
       console.log(res);  
     })
@@ -48,14 +48,39 @@ Parse.Cloud.define('order', function(req,res) {
 function autoCreateOrderNumber(user) {
     return new Promise(function(resolve, reject) {
         var query = new Parse.Query('Order');
-        query.equalTo('buyer', user);
+        query.equalTo('shop', user);
         query.descending('order_number');
         query.first()
         .then(function(order) {
             if(order) {
-                resolve(order);
+                var orderNumber  = parseInt(order.get('order_number'));
+                var newOderNumber = orderNumber + 1;
+                var newOrderNumberString = '';
+                if(newOderNumber <= 9) {
+                    newOrderNumberString = '0000' + newOderNumber;
+                }
+                else {
+                    if(newOderNumber <= 99) {
+                         newOrderNumberString = '000' + newOderNumber;
+                    }
+                    else {
+                        if(newOderNumber <= 999) {
+                            newOrderNumberString = '00' + newOderNumber;
+                        }
+                        else {
+                            if(newOderNumber <= 9999) {
+                                newOrderNumberString = '0' + newOderNumber;
+                            }
+                            else {
+                                newOrderNumberString = newOderNumber + ''
+                            }
+                        }
+                    }
+                }
+                resolve(newOrderNumberString);
             }
             else {
+                var newOrderNumberString = '00001';
                 reject();
             }
         })

@@ -52,12 +52,12 @@ var sendMail = function(email, code, date) {
             var query = new Parse.Query(Parse.User);
             query.equalTo("email", email);
             query.notContainedIn('status', ['delete','block']);
-            query.find({ useMasterKey: true }).then(function(result) {
+            query.find().then(function(result) {
                 if (result.length === 1) {
                     var result = result[0];
                     result.set("generatecode", code);
                     result.set("expireddate", date);
-                    result.save(null).then(function(results) {
+                    result.save(null,{ useMasterKey: true }).then(function(results) {
                         console.log(results);
                         resolve(successSendRequest);
                     }).catch(function(error) {
@@ -78,7 +78,7 @@ Parse.Cloud.define("requestPassword", function(req, res) {
     var email = req.params.email;
     var code = utils.randomValueHex(6);
     var date = new Date(moment().utc().toDate().getTime() + 86400000);
-     var  query = new Parse.Query(Parse.User);
+    var  query = new Parse.Query(Parse.User);
     query.equalTo("email", email);
     query.notContainedIn('status', ['delete','block']);
     query.find().then(function(result) {
