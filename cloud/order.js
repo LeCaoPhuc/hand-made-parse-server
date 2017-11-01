@@ -7,15 +7,54 @@ var utils = require('./utils');
 Parse.Cloud.define('getOrderList', function(req,res) {
     if(!req.user) {
         tools.notLogin(req,res);
+        return;
     }
     var user = req.user;
     var type = req.params.type;
     if(!type) {
         tools.error(req, res, 'type is undefine', errorConfig.REQUIRE);
+        return;
     }
-    var query = new Parse.Query('')
+    var query = new Parse.Query('Order')
+    query.equalTo('buyer', user);
+    query.equalTo('delivery_status', type);
+    query.descending('createdAt');
+    query.notEqualTo('status', 'delete');
+    query.find() 
+    .then(function(results){
+        tools.success(req, res, 'get order list success', results);
+    })
+    .catch(function(err){
+        tools.error(req, res, 'get order list fail', errorConfig.ACTION_FAIL, err);
+    })
 })
-
+Parse.Cloud.define('getOrderDetail', function(req,res) {
+    if(!req.user) {
+        tools.notLogin(req,res);
+        return;
+    }
+    var user = req.user;
+    var orderId = req.params.orderId;
+    if(!orderId) {
+        tools.error(req, res, 'order id is undefine', errorConfig.REQUIRE);
+        return;
+    }
+    var order = new Parse.Object('Order');
+    order.id = orderId;
+    var query = new Parse.Query('OrderDetail')
+    query.equalTo('order', order);
+    query.include('order');
+    query.include('order_detail');
+    query.notEqualTo('status', 'delete');
+    query.find() 
+    .then(function(results){
+        console.log(results);
+        // tools.success(req, res, 'get order list success', results);
+    })
+    .catch(function(err){
+        tools.error(req, res, 'get order detail fail', errorConfig.ACTION_FAIL, err);
+    })
+})
 Parse.Cloud.define('order', function(req,res) {
     if(!req.user) {
         tools.notLogin(req,res);
