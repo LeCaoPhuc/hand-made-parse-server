@@ -11,7 +11,7 @@
             "program": "${workspaceRoot}/index.js",
             "env": {
                 "PORT": "3000",
-                "ENV": "local",
+                "ENV": "dev",
                 "APP_NAME": "LuanVan.App",
                 "APP_ID": "luan-van-app-id",
                 "MASTER_KEY": "hand-made-masterkey",

@@ -48,8 +48,7 @@ Parse.Cloud.define('getOrderDetail', function(req,res) {
     query.notEqualTo('status', 'delete');
     query.find() 
     .then(function(results){
-        console.log(results);
-        // tools.success(req, res, 'get order list success', results);
+        tools.success(req, res, 'get order detail success', results);
     })
     .catch(function(err){
         tools.error(req, res, 'get order detail fail', errorConfig.ACTION_FAIL, err);
