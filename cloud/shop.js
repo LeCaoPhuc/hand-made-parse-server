@@ -6,7 +6,7 @@ var utils = require('./utils');
     errorConfig = require('../config/error-config')
 
 Parse.Cloud.define('getShopInfo',function(req,res) {
-    var shopId = req.params.shopId;
+    var shopId = req.params.shopId || 'SVGHiY4qfA';
     if(!req.user){
         tools.notLogin(req,res);
     }
@@ -15,7 +15,8 @@ Parse.Cloud.define('getShopInfo',function(req,res) {
         return;
     }
     var query = new Parse.Query('Shop');
-    query.notContainedIn('status',['block','delete'])
+    query.notContainedIn('status',['block','delete']);
+    query.include('shop_owner');
     query.get(shopId)
     .then(function (shop) {
         if (shop){
@@ -52,10 +53,13 @@ Parse.Cloud.define('createShop',function(req,res){
             else {
                 var Shop = Parse.Object.extend("Shop");
                 var shop = new Shop();
+                var User = Parse.Object.extend("User");
+                var userTemp = new User();
+                userTemp.id = user.id;
                 shop.set('shop_name', shopName);
                 shop.set('shop_phone_number', phoneNumber);
                 shop.set('shop_address', address),
-                shop.set('shop_owner',user);
+                shop.set('shop_owner',userTemp);
                 if(description) shop.set('shop_description', description);
                 shop.save(null,{
                     success: function(shop) {

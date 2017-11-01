@@ -23,6 +23,7 @@ Parse.Cloud.define('order', function(req,res) {
     }
     var user = req.user;
     var address = req.params.address;
+    var shopId = req.params.shopId || 'SVGHiY4qfA';
     var items = req.params.items;
     // if(!address || (address && (!address.telephone || !address.firstname || !address.lastname || !address.city))) {
     //     tools.error(req, res, 'address or any property is undefine', errorConfig.REQUIRE);
@@ -32,23 +33,33 @@ Parse.Cloud.define('order', function(req,res) {
     //      tools.error(req, res, 'items empty or undefine', errorConfig.REQUIRE);
     //     return;
     // }
-    // var Order = Parse.Object.extend("Order");
-    // var order = new Order();
-    // order.set('')
-    // var query = new Parse.Query('')
+    var productIdArr = [];
+    for(var i= 0; i < items.length; i++) {
+        productIdArr.push(items[i].id);
+    }
+    var shop = new Parse.Object("Shop");
+    shop.id = shopId;
     autoCreateOrderNumber(shop)
-    .then(function(res){
-      console.log(res);  
+    .then(function(orderNumber){
+        var productQuery = new Parse.Query('Product');
+        productQuery.containedIn(' ',productIdArr);
+        productQuery.notContainedIn('status', ['block','delete']);
+        return productQuery.find()
+    })
+    .then(function(results){
+        console.log(results);
     })
     .catch(function(err){
         console.log(err);
     })
 })
 
-function autoCreateOrderNumber(user) {
+function autoCreateOrderNumber(shop) {
     return new Promise(function(resolve, reject) {
         var query = new Parse.Query('Order');
-        query.equalTo('shop', user);
+        query.equalTo('shop', shop);
+        query.notEqualTo('status', 'delete');
+        query.include('shop');
         query.descending('order_number');
         query.first()
         .then(function(order) {
@@ -81,7 +92,7 @@ function autoCreateOrderNumber(user) {
             }
             else {
                 var newOrderNumberString = '00001';
-                reject();
+                resolve(newOrderNumberString);   
             }
         })
         .catch(function(err){
