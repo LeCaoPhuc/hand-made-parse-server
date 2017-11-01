@@ -5,3 +5,4 @@ require('./material');
 require('./color');
 require('./product');
 require('./order');
+require('./notify');
