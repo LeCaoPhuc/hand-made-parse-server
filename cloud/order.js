@@ -41,13 +41,21 @@ Parse.Cloud.define('order', function(req,res) {
     shop.id = shopId;
     autoCreateOrderNumber(shop)
     .then(function(orderNumber){
-        var productQuery = new Parse.Query('Product');
-        productQuery.containedIn(' ',productIdArr);
+        var productQuery = new Parse.Query('ProductDetail');
+        productQuery.containedIn('objectId',productIdArr);
         productQuery.notContainedIn('status', ['block','delete']);
+        productQuery.include('promotion');
+        productQuery.include()
         return productQuery.find()
     })
     .then(function(results){
         console.log(results);
+        if(results && results.length > 0) {
+
+        }
+        else {
+            tools.error(req,res, 'product not found', errorConfig.NOT_FOUND);
+        }
     })
     .catch(function(err){
         console.log(err);

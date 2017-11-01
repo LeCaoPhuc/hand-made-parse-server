@@ -90,9 +90,9 @@ Parse.Cloud.define("requestPassword", function(req, res) {
                 tools.error(req,res,'send mail fail', errorConfig.ACTION_FAIL,error);
             });
         } else if (result.length === 0) {
-            tools.error(req,res,'email not found',errorConfig.NOT_FOUND);
+            tools.error(req,res,'username not found',errorConfig.NOT_FOUND);
         } else {
-            tools.error(req,res,'email inside many user',errorConfig.INSIDE_MANY);
+            tools.error(req,res,'username inside many user',errorConfig.INSIDE_MANY);
         }
     }).catch(function(error) {
         console.log('-requestpassword');
@@ -100,11 +100,11 @@ Parse.Cloud.define("requestPassword", function(req, res) {
     });
 });
 Parse.Cloud.define("resetPassword", function(req, res) {
-    var email = req.params.email;
+    var username = req.params.username;
     var password = req.params.password;
     var code = req.params.verifyCode;
     var query = new Parse.Query(Parse.User);
-    query.equalTo("email", email);
+    query.equalTo("username", username);
     query.notContainedIn('status',['delete','block']);
     query.find()
     .then(function(result) {
