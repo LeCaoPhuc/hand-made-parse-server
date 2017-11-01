@@ -18,6 +18,10 @@ var errorConfig = {
     ACTION_FAIL : {
         code : 604,
         messgae : 'action fail inside catch'
+    },
+    ERROR_PARAMS : {
+        code : 605,
+        messgae : 'value of params os wrong'
     }
 };
 module.exports = errorConfig;

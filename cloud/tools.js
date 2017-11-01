@@ -45,10 +45,11 @@ function error(req, res, message, error, code) {
 function notLogin(req,res) {
     error(req,res, 'you are not login');
 }
+
 module.exports = {
     getUserById,
     cloneUserInfo,
     notLogin,
     error,
-    success,
+    success
 }

@@ -15,6 +15,7 @@ Parse.Cloud.define('getShopInfo',function(req,res) {
         return;
     }
     var query = new Parse.Query('Shop');
+    query.notContainedIn('status',['block','delete'])
     query.get(shopId)
     .then(function (shop) {
         if (shop){
@@ -80,6 +81,7 @@ function checkShopExists(shopName) {
         }
         var query = new Parse.Query('Shop');
         query.equalTo('shop_name', shopName);
+        query.notEqualTo('status','delete');
         query.first()
         .then(function (shop) {
             if (shop) resolve(shop);

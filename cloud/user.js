@@ -5,7 +5,6 @@ var utils = require('./utils');
     mailer = require('nodemailer');
     errorConfig = require('../config/error-config')
     tools = require('./tools');
-    query = new Parse.Query(Parse.User);
 var zeroCode = '0';
 Parse.Cloud.define('hello', function(req, res) {
   res.success('Hi');
@@ -21,11 +20,12 @@ var generateCodeNotCorrect = { code: 401, 'message': 'generatecode is not correc
 
 var mailHost = 'smtp.gmail.com',
     mailPort = 465,
-    mailUser = 'lecaobaophuc@gmail.com',
-    mailPass = '4592603537',
-    mailFrom = '"LVAdmin" <lecaobaophuc@gmail.com>',
+    mailUser = 'luanvanmailer@gmail.com',
+    mailPass = 'abc12345678',
+    mailFrom = '"LV Admin" <luanvanmailer@gmail.com>',
     mailSubject = '[LuanVan] Verify code',
     mailText = 'Your code confirm reset password: ';
+
 var sendMail = function(email, code, date) {
     return new Promise(function(resolve, reject) {
         var smtpConfig = {
@@ -49,7 +49,9 @@ var sendMail = function(email, code, date) {
                 return console.log(error);
                 reject(error);
             }
+            var query = new Parse.Query(Parse.User);
             query.equalTo("email", email);
+            query.notContainedIn('status', ['delete','block']);
             query.find({ useMasterKey: true }).then(function(result) {
                 if (result.length === 1) {
                     var result = result[0];
@@ -76,7 +78,9 @@ Parse.Cloud.define("requestPassword", function(req, res) {
     var email = req.params.email;
     var code = utils.randomValueHex(6);
     var date = new Date(moment().utc().toDate().getTime() + 86400000);
+     var  query = new Parse.Query(Parse.User);
     query.equalTo("email", email);
+    query.notContainedIn('status', ['delete','block']);
     query.find().then(function(result) {
         if (result.length === 1) {
             sendMail(email, code, date).then(function(result) {
@@ -99,7 +103,9 @@ Parse.Cloud.define("resetPassword", function(req, res) {
     var email = req.params.email;
     var password = req.params.password;
     var code = req.params.verifyCode;
+    var query = new Parse.Query(Parse.User);
     query.equalTo("email", email);
+    query.notContainedIn('status',['delete','block']);
     query.find()
     .then(function(result) {
         if (result.length === 1) {
@@ -144,18 +150,23 @@ Parse.Cloud.define('changePassword', function(req, res) {
     Parse.User.logIn(userName, oldPassword).then(function(user) {
         if (user) {
             if (user.id == req.user.id) {
-                user.set('password', newPassword);
-                user.save(null, { useMasterKey: true }).then(function(user) {
-                    res.success({
-                        success: true
+                if(user.get("status") != 'delete' && user.get("status") != 'block') {
+                    user.set('password', newPassword);
+                    user.save(null, { useMasterKey: true }).then(function(user) {
+                        res.success({
+                            success: true
+                        })
+                    }).catch(function(err) {
+                        console.log('-changePassword');
+                        res.error({
+                            code: 102,
+                            message: 'Cannot save new password.'
+                        })
                     })
-                }).catch(function(err) {
-                    console.log('-changePassword');
-                    res.error({
-                        code: 102,
-                        message: 'Cannot save new password.'
-                    })
-                })
+                }
+                else {
+                    res.error(errorConfig.NOT_FOUND);
+                }
             } else {
                 res.error({
                     code: 103,
@@ -204,10 +215,6 @@ Parse.Cloud.define('editProfile', function (req, res) {
     .then(function(shop){ 
         if(shop) {
             response.shop = shop;
-        }
-        if(userInfo.avatar) {
-            var file = new Parse.File("avatar.png", { base64: userInfo.avatar });
-            userInfo.avatar = file;
         }
         for (var i in userInfo) {
             userParams.set(i, userInfo[i]);
@@ -268,6 +275,7 @@ Parse.Cloud.define("getUserInfo", function(req,res){
        tools.error(req,res,'user not found',{});
    }
    var userQuery = new Parse.Query(Parse.User);
+   userQuery.notEqualTo('status', 'delete');
    userQuery.get(userId, { useMasterKey: true })
    .then(function (user) {
         if(user) {
@@ -296,6 +304,7 @@ Parse.Cloud.define("getUserInfo", function(req,res){
         tools.error(req,res,'error get user info fail', error, errorConfig.ACTION_FAIL.code);
    })
 })
+
 function checkEmailExists(email) {
     return new Promise(function (resolve, reject) {
         if(!email) {
@@ -304,6 +313,7 @@ function checkEmailExists(email) {
         }
         var query = new Parse.Query('User');
         query.equalTo('email', email);
+        query.notEqualTo('status', 'delete');
         query.first().then(function (user) {
             if (user) resolve(user);
             else resolve(null);
@@ -334,6 +344,7 @@ function checkUserHasShop(user) {
     return new Promise(function (resolve, reject) {
         var query = new Parse.Query('Shop');
         query.equalTo('shop_owner', user);
+        query.notEqualTo('status', 'delete');
         query.first().then(function (shop) {
             if (shop) resolve(shop);
             else resolve(null);
