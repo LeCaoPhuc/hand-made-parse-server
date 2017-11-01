@@ -81,9 +81,9 @@ Parse.Cloud.define("requestPassword", function(req, res) {
     var  query = new Parse.Query(Parse.User);
     query.equalTo("username", username);
     query.notContainedIn('status', ['delete','block']);
-    query.find().then(function(result) {
+    query.find({useMasterKey : true}).then(function(result) {
         if (result.length === 1) {
-            sendMail(result.get('email'), code, date).then(function(result) {
+            sendMail(result[0].get('email'), code, date).then(function(result) {
                 tools.success(req,res,'send mail success',result);
             }).catch((error) => {
                 console.log('-requestpassword');

@@ -25,6 +25,9 @@ Parse.Cloud.define('order', function(req,res) {
     var address = req.params.address;
     var shopId = req.params.shopId || 'SVGHiY4qfA';
     var items = req.params.items;
+    var totalPrice = 0;
+    var orderNumber = '';
+    var deliveyStatus = 'order';
     // if(!address || (address && (!address.telephone || !address.firstname || !address.lastname || !address.city))) {
     //     tools.error(req, res, 'address or any property is undefine', errorConfig.REQUIRE);
     //     return;
@@ -41,17 +44,27 @@ Parse.Cloud.define('order', function(req,res) {
     shop.id = shopId;
     autoCreateOrderNumber(shop)
     .then(function(orderNumber){
+        orderNumber = orderNumber;
         var productQuery = new Parse.Query('ProductDetail');
         productQuery.containedIn('objectId',productIdArr);
         productQuery.notContainedIn('status', ['block','delete']);
         productQuery.include('promotion');
-        productQuery.include()
+        productQuery.include('product');
         return productQuery.find()
     })
     .then(function(results){
         console.log(results);
         if(results && results.length > 0) {
-
+            var Order = Parse.Object.extend("Order");
+            var order = new Order();
+            order.set('shop', shop);
+            order.set('buyer',user);
+            var arrOrderDetailQuery = [];
+            for(var i = 0 ; i < results.length; i++) {
+                var OrderDetail = Parse.Object.extend("OrderDetail");
+                var orderDetail = new OrderDetail();
+                orderDetail
+            }
         }
         else {
             tools.error(req,res, 'product not found', errorConfig.NOT_FOUND);

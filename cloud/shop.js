@@ -53,13 +53,10 @@ Parse.Cloud.define('createShop',function(req,res){
             else {
                 var Shop = Parse.Object.extend("Shop");
                 var shop = new Shop();
-                var User = Parse.Object.extend("User");
-                var userTemp = new User();
-                userTemp.id = user.id;
                 shop.set('shop_name', shopName);
                 shop.set('shop_phone_number', phoneNumber);
                 shop.set('shop_address', address),
-                shop.set('shop_owner',userTemp);
+                shop.set('shop_owner',user);
                 if(description) shop.set('shop_description', description);
                 shop.save(null,{
                     success: function(shop) {
