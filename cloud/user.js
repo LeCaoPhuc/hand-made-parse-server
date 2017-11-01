@@ -75,19 +75,19 @@ var sendMail = function(email, code, date) {
     });
 };
 Parse.Cloud.define("requestPassword", function(req, res) {
-    var email = req.params.email;
+    var username = req.params.username;
     var code = utils.randomValueHex(6);
     var date = new Date(moment().utc().toDate().getTime() + 86400000);
     var  query = new Parse.Query(Parse.User);
-    query.equalTo("email", email);
+    query.equalTo("username", username);
     query.notContainedIn('status', ['delete','block']);
     query.find().then(function(result) {
         if (result.length === 1) {
-            sendMail(email, code, date).then(function(result) {
+            sendMail(result.get('email'), code, date).then(function(result) {
                 tools.success(req,res,'send mail success',result);
             }).catch((error) => {
                 console.log('-requestpassword');
-                tools.error(req,res,'send mail fail', error, errorConfig.ACTION_FAIL.code);
+                tools.error(req,res,'send mail fail', errorConfig.ACTION_FAIL,error);
             });
         } else if (result.length === 0) {
             tools.error(req,res,'email not found',errorConfig.NOT_FOUND);
@@ -96,7 +96,7 @@ Parse.Cloud.define("requestPassword", function(req, res) {
         }
     }).catch(function(error) {
         console.log('-requestpassword');
-         tools.error(req,res,'requestpassword catch', error, errorConfig.ACTION_FAIL.code);
+         tools.error(req,res,'requestpassword catch',  errorConfig.ACTION_FAIL ,error);
     });
 });
 Parse.Cloud.define("resetPassword", function(req, res) {
@@ -116,15 +116,15 @@ Parse.Cloud.define("resetPassword", function(req, res) {
                 return result.save(null,{ useMasterKey: true })
             } else {
                 if (result.get("expireddate").toISOString() < moment().utc().toDate().toISOString()) {
-                    tools.error(req,res,'expireddate  is expired',expiredDateNotCorrect);
+                    tools.error(req,res,'expireddate  is expired',errorConfig.ACTION_FAIL);
                 } else if (result.get("generatecode") != code) {
-                    tools.error(req,res,'generatecode is not correct',generateCodeNotCorrect);
+                    tools.error(req,res,'generatecode is not correct',errorConfig.ACTION_FAIL);
                 }
             }
         } else if (result.length === 0) {
-            tools.error(req,res,'email not found',errorUserNotFound);
+            tools.error(req,res,'email not found',errorConfig.NOT_FOUND);
         } else {
-            tools.error(req,res,'email inside many user',errorInsideManyUser);
+            tools.error(req,res,'email inside many user',errorConfig.INSIDE_MANY);
         }
     })
     .then(function(result) {
@@ -133,7 +133,7 @@ Parse.Cloud.define("resetPassword", function(req, res) {
          tools.success(req, res, 'reset password success', result);
     }).catch(function(error) {
         console.log('-resetpassword');
-        tools.error(req, res, 'reset password faild', error);
+        tools.error(req, res, 'reset password faild', errorConfig.ACTION_FAIL, error);
     });
 });
 Parse.Cloud.define('changePassword', function(req, res) {
@@ -205,7 +205,7 @@ Parse.Cloud.define('editProfile', function (req, res) {
                 return checkUserHasShop(userParams);
             }
             else{
-                  tools.error(req,res,'email has been used',{});
+                  tools.error(req,res,'email has been used',errorConfig.EXIST);
             }
         }
         else {
@@ -228,7 +228,7 @@ Parse.Cloud.define('editProfile', function (req, res) {
     })
     .catch(function (err) {
         console.log('-editProfile');
-        tools.error(req, res, 'editProfile error', err);
+        tools.error(req, res, 'editProfile error', errorConfig.ACTION_FAIL,err);
     })
 });
 Parse.Cloud.define("signUp", function(req,res) {
@@ -259,13 +259,13 @@ Parse.Cloud.define("signUp", function(req,res) {
                 },
                 error: function(user, error) {
                     // Show the error message somewhere and let the user try again.
-                    tools.error(req,res,'error in signup', error, errorConfig.ACTION_FAIL.code)
+                    tools.error(req,res,'error in signup', errorConfig.ACTION_FAIL,error)
                 }
                 }); 
             }
         })
         .catch(function(err){
-            tools.error(req,res,'check username exist fail', err, errorConfig.ACTION_FAIL.code)
+            tools.error(req,res,'check username exist fail', errorConfig.ACTION_FAIL,err)
         })
     }
 })
@@ -293,7 +293,7 @@ Parse.Cloud.define("getUserInfo", function(req,res){
                 }
             })
             .catch(function(error){
-                tools.error(req,res,'error check user has shop', error ,errorConfig.ACTION_FAIL.code);
+                tools.error(req,res,'error check user has shop' ,errorConfig.ACTION_FAIL, error);
             })
         }
         else {
@@ -301,7 +301,7 @@ Parse.Cloud.define("getUserInfo", function(req,res){
         } 
     })
    .catch(function(error){
-        tools.error(req,res,'error get user info fail', error, errorConfig.ACTION_FAIL.code);
+        tools.error(req,res,'error get user info fail', errorConfig.ACTION_FAIL,error);
    })
 })
 
