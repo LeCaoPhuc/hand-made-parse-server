@@ -216,6 +216,10 @@ Parse.Cloud.define('editProfile', function (req, res) {
         if(shop) {
             response.shop = shop;
         }
+        if(userInfo.avatar) {
+            var file = new Parse.File('avatar.png', { base64: userInfo.avatar });
+            userInfo.avatar = file;
+        }
         for (var i in userInfo) {
             userParams.set(i, userInfo[i]);
         }
