@@ -51,6 +51,57 @@ Parse.Cloud.define('getProductListWithCategory',function(req,res){
     })
 })
 
+Parse.Cloud.define('getProductDetailWithId',function(req,res) { // == search with SKU
+    if(!req.user) {
+        tools.notLogin(req,res);
+        return;
+    }
+    var productId = req.params.id;
+    if(!productId) {
+        tools.error(req,res,'id was not undefine',errorConfig.REQUIRE);
+    }
+    var product = new Parse.Object('Product');
+    product.id = productId;
+    var productDetailQuery = new Parse.Query('ProductDetail');
+    productDetailQuery.equalTo('product',product);
+    productDetailQuery.include('product');
+    productDetailQuery.include('color');
+    productDetailQuery.include('material');
+    productDetailQuery.include('promotion');
+    productDetailQuery.notContainedIn('status',['delete','block']);
+    productDetailQuery.find()
+    .then(function(results){
+        tools.success(req,res,'get product detail success', results);
+    })
+    .catch(function(err) {
+        tools.error(req,res,'get product detail fail',errorConfig.ACTION_FAIL,err);
+    })
+})
+
+Parse.Cloud.define('getProductDetailWithSKU',function(req,res) {
+    if(!req.user) {
+        tools.notLogin(req,res);
+        return;
+    }
+    var sku = req.params.sku;
+    if(!sku) {
+        tools.error(req,res,'id was not undefine',errorConfig.REQUIRE);
+    }
+    var productDetailQuery = new Parse.Query('ProductDetail');
+    productDetailQuery.equalTo('sku',sku);
+    productDetailQuery.include('product');
+    productDetailQuery.include('color');
+    productDetailQuery.include('material');
+    productDetailQuery.include('promotion');
+    productDetailQuery.notContainedIn('status',['delete','block']);
+    productDetailQuery.find()
+    .then(function(results){
+        tools.success(req,res,'get product detail success', results);
+    })
+    .catch(function(err) {
+        tools.error(req,res,'get product detail fail',errorConfig.ACTION_FAIL,err);
+    })
+})
 // Parse.Cloud.define('getNewProductList',function(req,res){
 //     if(!req.user) {
 //         tools.notLogin(req,res);

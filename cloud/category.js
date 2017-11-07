@@ -40,7 +40,3 @@ Parse.Cloud.define('getCategoryList', function(req,res){
         }
     });
 })
-
-function countProductOfCategory (categoryId) {
-
-}

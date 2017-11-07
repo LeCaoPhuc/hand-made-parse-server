@@ -6,3 +6,4 @@ require('./color');
 require('./product');
 require('./order');
 require('./notify');
+require('./search');
