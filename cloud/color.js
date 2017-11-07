@@ -14,6 +14,7 @@ Parse.Cloud.define('getColorList', function(req,res){
     var page = req.params.page;
     if(!limit || !page) {
         tools.error(req,res, 'params was not undefine', errorConfig.REQUIRE);
+        return;
     }
     else {
         limit = parseInt(limit);
