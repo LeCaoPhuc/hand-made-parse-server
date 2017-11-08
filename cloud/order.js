@@ -128,17 +128,17 @@ Parse.Cloud.define('order', function(req,res) {
                 if(productDetails[i].id == items[j].id) {
                     var OrderDetail = Parse.Object.extend("OrderDetail");
                     var orderDetail = new OrderDetail();
-                    orderDetail.set('quantity_buy', items[j].qty);
+                    orderDetail.set('quantity_buy', parseFloat(items[j].qty));
                     orderDetail.set('product_detail',productDetails[i]);
                     orderDetail.set('order',order);
                     if(productDetails[i].get('promotion')) {
                         var price = productDetails[i].get('promotion').get('percent')*productDetails[i].get('price');
                         orderDetail.set('unit_price', price);
-                        orderDetail.set('total_price_product', price * items[j].qty)
+                        orderDetail.set('total_price_product', price * parseFloat(items[j].qty))
                     }
                     else {
                         orderDetail.set('unit_price', productDetails[i].get('price'));
-                        orderDetail.set('total_price_product', productDetails[i].get('price') * items[j].qty)
+                        orderDetail.set('total_price_product', productDetails[i].get('price') * parseFloat(items[j].qty))
                     }
                     arrPromiseSaveOrderDetail.push(orderDetail.save(null,{useMasterKey : true }));
                 }
