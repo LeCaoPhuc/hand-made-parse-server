@@ -1,7 +1,7 @@
 var env = process.env.ENV || 'dev'
 , path = require('path')
 , configs = {};
-
+var url = 'http://192.168.1.157:';
 configs.dev = {
     
     port: 3000,
@@ -17,7 +17,7 @@ configs.dev = {
         appId: process.env.APP_ID || 'luan-van-app-id',
         appName: 'LuanVan.App',
         masterKey: 'luan-van-masterkey', //Add your master key here. Keep it secret!
-        serverURL: process.env.SERVER_URL || `http://localhost:3000/parse`,  // Don't forget to change to https if needed
+        serverURL: process.env.SERVER_URL || url+`3000/parse`,  // Don't forget to change to https if needed
         // liveQuery: {
         //   classNames: ["Posts", "Comments"] // List of classes to support for query subscriptions
         // }
@@ -40,7 +40,7 @@ configs.local = {
         appId: process.env.APP_ID || 'luan-van-app-id',
         appName: 'LuanVan.App',
         masterKey: 'luan-van-masterkey', //Add your master key here. Keep it secret!
-        serverURL: process.env.SERVER_URL || `http://localhost:3000/parse`,  // Don't forget to change to https if needed
+        serverURL: process.env.SERVER_URL ||  url+`3000/parse`,  // Don't forget to change to https if needed
         // liveQuery: {
         //   classNames: ["Posts", "Comments"] // List of classes to support for query subscriptions
         // }

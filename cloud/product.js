@@ -36,10 +36,13 @@ Parse.Cloud.define('getProductListWithCategory',function(req,res){
     }
     var category = new Parse.Object('Category');
     category.id = categoryId;
-    var query = new Parse.Query('Product');
+    var query = new Parse.Query('ProductDetail');
     query.equalTo('category',category);
     query.notContainedIn('status',['delete','block']);
-    query.include('product_detail_display');
+    query.include('product');
+    query.include('color');
+    query.include('material');
+    query.include('promotion');
     query.limit(limit);
     query.skip((page-1)*limit);
     query.find()
