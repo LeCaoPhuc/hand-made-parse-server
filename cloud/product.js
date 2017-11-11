@@ -60,12 +60,28 @@ Parse.Cloud.define('getProductDetailWithId',function(req,res) { // == search wit
         return;
     }
     var productId = req.params.id;
+    var limit = req.params.limit;
+    var page = req.params.page;
+    if(!limit || !page) {
+        tools.error(req,res, 'params was not undefine', errorConfig.REQUIRE);
+        return;
+    }
+    else {
+        limit = parseInt(limit);
+        page = parseInt(page);
+        if(page < 1) {
+            tools.error(req,res, 'page must be larger than 0', errorConfig.ERROR_PARAMS);
+            return;
+        }
+    }
     if(!productId) {
         tools.error(req,res,'id was not undefine',errorConfig.REQUIRE);
     }
     var product = new Parse.Object('Product');
     product.id = productId;
     var productDetailQuery = new Parse.Query('ProductDetail');
+    productDetailQuery.limit(limit+1); // increase 1 to cehck have more product
+    productDetailQuery.skip((page-1)*limit);
     productDetailQuery.equalTo('product',product);
     productDetailQuery.include('product');
     productDetailQuery.include('color');
@@ -74,7 +90,14 @@ Parse.Cloud.define('getProductDetailWithId',function(req,res) { // == search wit
     productDetailQuery.notContainedIn('status',['delete','block']);
     productDetailQuery.find()
     .then(function(results){
-        tools.success(req,res,'get product detail success', results);
+        if(results.length > limit) { // if results.length  > limit => have more product => last = false else last = true
+            results.pop();
+            tools.success(req, res, 'get product list success', results);
+        } 
+        else {  
+            var last = true;
+            tools.success(req, res, 'get product list success', results,last);
+        }  
     })
     .catch(function(err) {
         tools.error(req,res,'get product detail fail',errorConfig.ACTION_FAIL,err);
@@ -105,36 +128,6 @@ Parse.Cloud.define('getProductDetailWithSKU',function(req,res) {
         tools.error(req,res,'get product detail fail',errorConfig.ACTION_FAIL,err);
     })
 })
-// Parse.Cloud.define('getNewProductList',function(req,res){
-//     if(!req.user) {
-//         tools.notLogin(req,res);
-//     }
-//     var limit = req.params.limit;
-//     var page = req.params.page;
-//     if(!limit || !page) {
-//         tools.error(req,res, 'params was not undefine', errorConfig.REQUIRE);
-//         return;
-//     }
-//     else {
-//         limit = parseInt(limit);
-//         page = parseInt(page);
-//         if(page < 1) {
-//             tools.error(req,res, 'page must be larger than 0', errorConfig.ERROR_PARAMS);
-//             return;
-//         }
-//     }
-//     var query = new Parse.Query('Product');
-//     query.equalTo('category',category);
-//     query.notContainedIn('status',['delete','block']);
-//     query.include('product_detail_display');
-//     query.limit(limit);
-//     query.skip((page-1)*limit);
-//     query.find()
-//     .then(function(results){
-//         tools.success(req, res, 'get product list success', results);
-//     })
-//     .catch(function(err){
-//         tools.error(req, res, 'get product list fail', errorConfig.ACTION_FAIL, err);
-//     })
-// })
+
+
 

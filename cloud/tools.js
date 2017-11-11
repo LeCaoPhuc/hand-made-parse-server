@@ -16,11 +16,17 @@ function cloneUserInfo(user, fields) {
     if (userClone.get('avatar')) userClone.get('avatar')._url = config.httpsDomain + userClone.get('avatar').url().split('parse')[1];
     return userClone;
 }
-function success(req, res, message, data) {
+function success(req, res, message, data, lastPage) {
     var responseData = {
         success: true,
         message: message,
         data: data
+    }
+    if(lastPage) {
+        responseData.lastPage = lastPage;
+    }
+    else {
+        responseData.lastPage = false;
     }
     if (res) res.success(responseData);
     else return responseData;
