@@ -68,7 +68,7 @@ Parse.Cloud.define('order', function(req,res) {
     var deliveryStatus = 'order';
     var productDetails = [];
     var orderObject ;
-    if(!address || (address && (!address.telephone || !address.firstname || !address.lastname || !address.city))) {
+    if(!address || (address && (!address.telephone || !address.name || !address.city))) {
         tools.error(req, res, 'address or any property is undefine', errorConfig.REQUIRE);
         return;
     }
