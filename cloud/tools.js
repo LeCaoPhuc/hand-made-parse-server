@@ -25,9 +25,6 @@ function success(req, res, message, data, lastPage) {
     if(lastPage) {
         responseData.lastPage = lastPage;
     }
-    else {
-        responseData.lastPage = false;
-    }
     if (res) res.success(responseData);
     else return responseData;
 }
