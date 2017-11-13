@@ -35,6 +35,7 @@ Parse.Cloud.define('getOrderDetail', function(req,res) {
     }
     var user = req.user;
     var orderId = req.params.orderId;
+    var orderResult ;
     if(!orderId) {
         tools.error(req, res, 'order id is undefine', errorConfig.REQUIRE);
         return;
@@ -44,11 +45,39 @@ Parse.Cloud.define('getOrderDetail', function(req,res) {
     var query = new Parse.Query('OrderDetail')
     query.equalTo('order', order);
     query.include('order');
-    query.include('order_detail');
+    query.include('product_detail');
     query.notEqualTo('status', 'delete');
     query.find() 
-    .then(function(results){
-        tools.success(req, res, 'get order detail success', results);
+    .then(function(results){ 
+        var arrPromise = [];
+        orderResult = results;
+        for(var i = 0 ; i < results.length; i++) {
+            var queryProductDetail = new Parse.Query('ProductDetail');
+            queryProductDetail.notEqualTo('status', 'delete');
+            queryProductDetail.include('product');
+            queryProductDetail.include('color');
+            queryProductDetail.include('material');
+            queryProductDetail.include('promotion');
+            arrPromise.push(queryProductDetail.get(results[i].get('product_detail').id, {useMasterKey: true}));
+        }
+        Promise.all(arrPromise)
+        .then(function(result){
+            var dataSuccess = []
+            for(var i = 0 ; i < orderResult.length ; i++) {
+                for(var j = 0; j < result.length; j++) {
+                    if(result[j].id == orderResult[i].get('product_detail').id) {
+                        dataSuccess.push({
+                            order_detail :  orderResult[i],
+                            product_detail: result[j]
+                        })
+                    }
+                }
+            }
+            tools.success(req, res, 'get order detail success', dataSuccess);
+        })
+        .catch(function(err){
+            tools.error(req, res, 'Promise All fail', errorConfig.ACTION_FAIL, err);
+        })
     })
     .catch(function(err){
         tools.error(req, res, 'get order detail fail', errorConfig.ACTION_FAIL, err);
