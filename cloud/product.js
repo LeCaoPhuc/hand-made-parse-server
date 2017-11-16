@@ -1,10 +1,4 @@
-tools.checkAdmin(req.user)
-    .then(function(result){
 
-    })
-    .catch(function(err){
-        tools.error(req,res, 'you are not admin', errorConfig.NOT_FOUND,err);
-    })
 Parse.Cloud.useMasterKey();
 var utils = require('./utils');
     moment = require('moment');
