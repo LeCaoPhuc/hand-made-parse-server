@@ -10,60 +10,71 @@ Parse.Cloud.define('getMaterialList', function(req,res){
         tools.notLogin(req,res);
         return;
     }
-    var limit = req.params.limit;
-    var page = req.params.page;
-    if(!limit || !page) {
-        tools.error(req,res, 'params was not undefine', errorConfig.REQUIRE);
-    }
-    else {
-        limit = parseInt(limit);
-        page = parseInt(page);
-        if(page < 1) {
-            tools.error(req,res, 'page must be larger than 0', errorConfig.ERROR_PARAMS);
-            return;
+    tools.checkAdmin(req.user)
+    .then(function(result){
+        var limit = req.params.limit;
+        var page = req.params.page;
+        if(!limit || !page) {
+            tools.error(req,res, 'params was not undefine', errorConfig.REQUIRE);
         }
-    }
-    var query = new Parse.Query('Material');
-    query.limit(limit);
-    query.skip((page-1)*limit);
-    // query.descending("category_name");
-    query.notContainedIn('status', ['delete','block']);
-    query.find({
-        success: function(results) {
-            tools.success(req, res, 'get material list successfully', results);
-        },
-        error: function(error) {
-            tools.error(req, res, 'error get list material',error, errorConfig.ACTION_FAIL);
+        else {
+            limit = parseInt(limit);
+            page = parseInt(page);
+            if(page < 1) {
+                tools.error(req,res, 'page must be larger than 0', errorConfig.ERROR_PARAMS);
+                return;
+            }
         }
-    });
+        var query = new Parse.Query('Material');
+        query.limit(limit);
+        query.skip((page-1)*limit);
+        // query.descending("category_name");
+        query.notContainedIn('status', ['delete','block']);
+        query.find({
+            success: function(results) {
+                tools.success(req, res, 'get material list successfully', results);
+            },
+            error: function(error) {
+                tools.error(req, res, 'error get list material',error, errorConfig.ACTION_FAIL);
+            }
+        });
+    })
+    .catch(function(err){
+        tools.error(req,res, 'you are not admin', errorConfig.NOT_FOUND,err);
+    })
 })
 
 Parse.Cloud.define('saveMaterial',function(req,res) {
     if(!req.user) {
         tools.notLogin(req,res);
     }
-    var id = req.params.id;
-    var name = req.params.name;
-    if(!name) {
-        tools.error(req,res,'name was not undefine',errorConfig.REQUIRE);
-        return;
-    }
-    var Materrial = new Parse.Object.extend('Material');
-    var material = new Materrial();
-    if(id) { //craete
-        material.id = id;
-        material.set('material_name',name);
-    }
-    else {//update
-        if(name)
-            material.set('material_name',name);
-    }
-    material.save(null)
+    tools.checkAdmin(req.user)
     .then(function(result){
-        tools.success(req,res,'save material success', result);
+        var id = req.params.id;
+        var name = req.params.name;
+        if(!name) {
+            tools.error(req,res,'name was not undefine',errorConfig.REQUIRE);
+            return;
+        }
+        var Materrial = new Parse.Object.extend('Material');
+        var material = new Materrial();
+        if(id) { //craete
+            material.id = id;
+            material.set('material_name',name);
+        }
+        else {//update
+            if(name)
+                material.set('material_name',name);
+        }
+        material.save(null)
+        .then(function(result){
+            tools.success(req,res,'save material success', result);
+        })
+        .catch(function(err) {
+            tools.error(req,res,'error catch save material',errorConfig.ACTION_FAIL,err);
+        })
     })
-    .catch(function(err) {
-        tools.error(req,res,'error catch save material',errorConfig.ACTION_FAIL,err);
+    .catch(function(err){
+        tools.error(req,res, 'you are not admin', errorConfig.NOT_FOUND,err);
     })
-
 })

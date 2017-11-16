@@ -1,3 +1,10 @@
+tools.checkAdmin(req.user)
+    .then(function(result){
+
+    })
+    .catch(function(err){
+        tools.error(req,res, 'you are not admin', errorConfig.NOT_FOUND,err);
+    })
 Parse.Cloud.useMasterKey();
 var utils = require('./utils');
     moment = require('moment');
@@ -9,135 +16,147 @@ Parse.Cloud.define('saveProduct',function(req,res){
     if(!req.user) {
         tools.notLogin(req,res);
     }
-    var productName = req.params.product_name;
-    var categoryId = req.params.category_id;
-    var description = req.params.description;
-    var status = req.params.status;
-    var id = req.params.id
-    if(!productName || !categoryId || !description ) {
-        tools.error(req,res,'params was not undefine',errorConfig.REQUIRE);
-        return;
-    }
-    var productResult ;
-    var Product = new Parse.Object.extend('Product');
-    var product = new Product();
-    var category = new Parse.Object('Category');
-    category.id = categoryId;
-    if(id) { //update
-        product.id = id;
-        product.set('product_name',productName);
-        product.set('category', category);
-        product.set('product_description',description);
-        product.set('status',status);
-    }
-    else { // create
-        product.set('product_name',productName);
-        product.set('category', category);
-        product.set('product_description',description);
-        product.set('status',status);
-    }
-    product.save(null,{useMasterKey : true})
+    tools.checkAdmin(req.user)
     .then(function(result){
-        productResult = product;
-        var query = new Parse.Query('ProductDetail');
-        query.notEqualTo('status','delete');
-        query.equalTo('product',result);
-        return query.find()
-        // tools.success(req,res,'save product success', result);
-    })
-    .then(function(results){
-        var arrPromise = [];
-        if(results && results.length > 0) {
-            for(var i in results) {
-                results[i].set('category',category);
-                product.set('status',status);
-                arrPromise.push(results[i].save(null,{useMasterKey: true}))
+        var productName = req.params.product_name;
+        var categoryId = req.params.category_id;
+        var description = req.params.description;
+        var status = req.params.status;
+        var id = req.params.id
+        if(!productName || !categoryId || !description ) {
+            tools.error(req,res,'params was not undefine',errorConfig.REQUIRE);
+            return;
+        }
+        var productResult ;
+        var Product = new Parse.Object.extend('Product');
+        var product = new Product();
+        var category = new Parse.Object('Category');
+        category.id = categoryId;
+        if(id) { //update
+            product.id = id;
+            product.set('product_name',productName);
+            product.set('category', category);
+            product.set('product_description',description);
+            product.set('status',status);
+        }
+        else { // create
+            product.set('product_name',productName);
+            product.set('category', category);
+            product.set('product_description',description);
+            product.set('status',status);
+        }
+        product.save(null,{useMasterKey : true})
+        .then(function(result){
+            productResult = product;
+            var query = new Parse.Query('ProductDetail');
+            query.notEqualTo('status','delete');
+            query.equalTo('product',result);
+            return query.find()
+            // tools.success(req,res,'save product success', result);
+        })
+        .then(function(results){
+            var arrPromise = [];
+            if(results && results.length > 0) {
+                for(var i in results) {
+                    results[i].set('category',category);
+                    product.set('status',status);
+                    arrPromise.push(results[i].save(null,{useMasterKey: true}))
+                }
+                return Promise.all(arrPromise)
             }
-            return Promise.all(arrPromise)
-        }
-        else {
-            tools.success(req,res,'save create product success', productResult);
-        }
-    })
-    .then(function(response){
-        if(response) {
-            tools.success(req,res,'save update product success',response);
-        }
+            else {
+                tools.success(req,res,'save create product success', productResult);
+            }
+        })
+        .then(function(response){
+            if(response) {
+                tools.success(req,res,'save update product success',response);
+            }
+        })
+        .catch(function(err){
+            tools.error(req,res,'error in catch saveProduct',errorConfig.ACTION_FAIL,err);
+        })
     })
     .catch(function(err){
-        tools.error(req,res,'error in catch saveProduct',errorConfig.ACTION_FAIL,err);
+         tools.error(req,res,'you are not admin',errorConfig.NOT_FOUND,err);
     })
 })
 Parse.Cloud.define('saveProductDetail',function(req,res){
     if(!req.user) {
         tools.notLogin(req,res);
     }
-    var productId = req.params.product_id;
-    var categoryId = req.params.category_id;
-    var colorId = req.params.color_id;
-    var materialId = req.params.material_id;
-    var promotonId = req.params.promotion_id;
-    var image = req.params.image;
-    var price = req.params.price;
-    var sku = req.params.sku;
-    var quantity = req.params.quantity;
-    var status = req.params.status;
-    var id = req.params.id;
-    if(!productId || !categoryId || !image || !colorId || !materialId || !price || !quantity) {
-        tools.error(req,res,'params was not undefine', errorConfig.REQUIRE);
-        return;
-    }
-    var ProductDetail = new Parse.Object.extend('ProductDetail');
-    var productDetail = new ProductDetail();
-    if(id) {
-        productDetail.id = id;
-        var color = new Parse.Object('Color');
-        color.id = colorId;
-        productDetail.set('color',color);
-        var material = new Parse.Object('Material');
-        material.id = materialId;
-        productDetail.set('material',material);
-        if(promotonId) {
-             var promotion = new Parse.Object('Promotion');
-             promotion.id = promotonId;
-             productDetail.set('promotion',promotion);
-        }
-        productDetail.set('image',image);   
-        productDetail.set('sku',sku);   
-        productDetail.set('price',price);   
-        productDetail.set('status',status); 
-        productDetail.set('quantity',quantity);     
-    }
-    else {
-        var product = new Parse.Object('Product');
-        product.id = productId;
-        productDetail.set('product',product);
-        var category = new Parse.Object('Category');
-        category.id = categoryId;
-        productDetail.set('category',category);
-        var color = new Parse.Object('Color');
-        color.id = colorId;
-        productDetail.set('color',color);
-        var material = new Parse.Object('Material');
-        material.id = materialId;
-        productDetail.set('material',material);
-        if(promotonId) {
-             var promotion = new Parse.Object('Promotion');
-             promotion.id = promotonId;
-             productDetail.set('promotion',promotion);
-        }
-        productDetail.set('image',image);   
-        productDetail.set('sku',sku);   
-        productDetail.set('price',price);   
-        productDetail.set('status',status); 
-        productDetail.set('quantity',quantity);     
-    }
-    productDetail.save(null,{useMasterKey: true})
+    tools.checkAdmin(req.user)
     .then(function(result){
-        tools.success(req,res,'save productDetail success',result);
+        var productId = req.params.product_id;
+        var categoryId = req.params.category_id;
+        var colorId = req.params.color_id;
+        var materialId = req.params.material_id;
+        var promotonId = req.params.promotion_id;
+        var image = req.params.image;
+        var price = req.params.price;
+        var sku = req.params.sku;
+        var quantity = req.params.quantity;
+        var status = req.params.status;
+        var id = req.params.id;
+        if(!productId || !categoryId || !image || !colorId || !materialId || !price || !quantity) {
+            tools.error(req,res,'params was not undefine', errorConfig.REQUIRE);
+            return;
+        }
+        var ProductDetail = new Parse.Object.extend('ProductDetail');
+        var productDetail = new ProductDetail();
+        if(id) {
+            productDetail.id = id;
+            var color = new Parse.Object('Color');
+            color.id = colorId;
+            productDetail.set('color',color);
+            var material = new Parse.Object('Material');
+            material.id = materialId;
+            productDetail.set('material',material);
+            if(promotonId) {
+                var promotion = new Parse.Object('Promotion');
+                promotion.id = promotonId;
+                productDetail.set('promotion',promotion);
+            }
+            productDetail.set('image',image);   
+            productDetail.set('sku',sku);   
+            productDetail.set('price',price);   
+            productDetail.set('status',status); 
+            productDetail.set('quantity',quantity);     
+        }
+        else {
+            var product = new Parse.Object('Product');
+            product.id = productId;
+            productDetail.set('product',product);
+            var category = new Parse.Object('Category');
+            category.id = categoryId;
+            productDetail.set('category',category);
+            var color = new Parse.Object('Color');
+            color.id = colorId;
+            productDetail.set('color',color);
+            var material = new Parse.Object('Material');
+            material.id = materialId;
+            productDetail.set('material',material);
+            if(promotonId) {
+                var promotion = new Parse.Object('Promotion');
+                promotion.id = promotonId;
+                productDetail.set('promotion',promotion);
+            }
+            productDetail.set('image',image);   
+            productDetail.set('sku',sku);   
+            productDetail.set('price',price);   
+            productDetail.set('status',status); 
+            productDetail.set('quantity',quantity);     
+        }
+        productDetail.save(null,{useMasterKey: true})
+        .then(function(result){
+            tools.success(req,res,'save productDetail success',result);
+        })
+        .catch(function(err){
+            tools.error(req,res,'faild in catch saveProductDetail',errorConfig.ACTION_FAIL, err);
+        })
     })
     .catch(function(err){
-        tools.error(req,res,'faild in catch saveProductDetail',errorConfig.ACTION_FAIL, err);
+        tools.error(req,res, 'you are not admin', errorConfig.NOT_FOUND,err);
     })
 })
 Parse.Cloud.define('getProductListWithCategory',function(req,res){

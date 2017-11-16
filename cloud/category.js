@@ -43,6 +43,10 @@ Parse.Cloud.define('getCategoryList', function(req,res){
 })
 
 Parse.Cloud.define('saveCategory',function(req,res){
+    if(!req.user) {
+        tools.notLogin(req,res);
+        return;
+    }
     var id = req.params.id;
     var image = req.params.image;
     var name = req.params.name;

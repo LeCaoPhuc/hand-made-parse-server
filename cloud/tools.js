@@ -48,11 +48,27 @@ function error(req, res, message, error, code) {
 function notLogin(req,res) {
     error(req,res, 'you are not login');
 }
-
+function checkAdmin(user) {
+    return new Promise(function(resolve,reject){
+        user.fetch()
+        .then(function(result){
+            if(result && result.get('user_type')=='admin') {
+                resolve(result);
+            }
+            else {
+                reject(result);
+            }
+        })
+        .catch(function(err){
+            reject(err);
+        })
+    })
+}
 module.exports = {
     getUserById,
     cloneUserInfo,
     notLogin,
     error,
-    success
+    success,
+    checkAdmin
 }

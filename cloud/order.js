@@ -200,77 +200,83 @@ Parse.Cloud.define('changeDeliveryStatus',function(req,res){
         tools.notLogin(req,res);
         return;
     }
-    var orderId = req.params.id;
-    if(!orderId) {
-        tools.error(req,res,'orderId was not undefine',errorConfig.REQUIRE);
-    }
-    var order;
-    var orderDetailList ;
-    var Order = new Parse.Query('Order');
-    Order.get(orderId,{useMasterKey: true})
+    tools.checkAdmin(req.user)
     .then(function(result){
-        if(result) {
-            order = result;
-            var query = new Parse.Query('OrderDetail')
-            query.include('product_detail');
-            query.notEqualTo('status', 'delete');
-            return query.find()
+         var orderId = req.params.id;
+        if(!orderId) {
+            tools.error(req,res,'orderId was not undefine',errorConfig.REQUIRE);
         }
-    })
-    .then(function(results){
-        var arrPromise = [];
-        orderDetailList = results;
-        if(order.get('delivery_status')=='order'){
-            for(var i in results) {
-                if(results[i].get('product_detail').get('quantity') < results[i].get('quantity_buy')) {
-                    return new Promise(function(resolve,reject){
-                        resolve({
-                            success: true,
-                            data: {
-                                quantity_buy: results[i].get('quantity_buy'),
-                                quantity_product: results[i].get('product_detail').get('quantity'),
-                                product_detail_id: results[i].get('product_detail').id
-                            },
-                            message: errorConfig.ERROR_DATA
+        var order;
+        var orderDetailList ;
+        var Order = new Parse.Query('Order');
+        Order.get(orderId,{useMasterKey: true})
+        .then(function(result){
+            if(result) {
+                order = result;
+                var query = new Parse.Query('OrderDetail')
+                query.include('product_detail');
+                query.notEqualTo('status', 'delete');
+                return query.find()
+            }
+        })
+        .then(function(results){
+            var arrPromise = [];
+            orderDetailList = results;
+            if(order.get('delivery_status')=='order'){
+                for(var i in results) {
+                    if(results[i].get('product_detail').get('quantity') < results[i].get('quantity_buy')) {
+                        return new Promise(function(resolve,reject){
+                            resolve({
+                                success: true,
+                                data: {
+                                    quantity_buy: results[i].get('quantity_buy'),
+                                    quantity_product: results[i].get('product_detail').get('quantity'),
+                                    product_detail_id: results[i].get('product_detail').id
+                                },
+                                message: errorConfig.ERROR_DATA
+                            })
+                            return;
                         })
-                        return;
-                    })
-                } // if quantity in store < quantity buy
-                results[i].get('product_detail').set('quantity',results[i].get('product_detail').get('quantity')-results[i].get('quantity_buy'));
-                arrPromise.push(results[i].get('product_detail').save())
-            }
-        }
-        else {
-            for(var i in results) {
-                results[i].get('product_detail').set('quantity',results[i].get('product_detail').get('quantity') + results[i].get('quantity_buy'));
-                arrPromise.push(results[i].get('product_detail').save())
-            }
-        }
-        return Promise.all(arrPromise)
-    })
-    .then(function(responseData){
-        if(responseData && responseData.success) {
-            responseData.success = false;
-            res.success(responseData);
-        }
-        else {
-            if(order.get('delivery_status')=='order') {
-                    order.set('delivery_status','bill');
-                    return order.save()
+                    } // if quantity in store < quantity buy
+                    results[i].get('product_detail').set('quantity',results[i].get('product_detail').get('quantity')-results[i].get('quantity_buy'));
+                    arrPromise.push(results[i].get('product_detail').save())
+                }
             }
             else {
-                    order.set('delivery_status','order');
-                    return order.save()
+                for(var i in results) {
+                    results[i].get('product_detail').set('quantity',results[i].get('product_detail').get('quantity') + results[i].get('quantity_buy'));
+                    arrPromise.push(results[i].get('product_detail').save())
+                }
             }
-        }
+            return Promise.all(arrPromise)
+        })
+        .then(function(responseData){
+            if(responseData && responseData.success) {
+                responseData.success = false;
+                res.success(responseData);
+            }
+            else {
+                if(order.get('delivery_status')=='order') {
+                        order.set('delivery_status','bill');
+                        return order.save()
+                }
+                else {
+                        order.set('delivery_status','order');
+                        return order.save()
+                }
+            }
+        })
+        .then(function(data){ 
+            if(data)
+                tools.success(req,res,'update delivery status successfully',orderDetailList);
+        })
+        
+        .catch(function(err){
+            tools.error(req,res,'error catch changeDeliveryStatus',errorConfig.ACTION_FAIL,err);
+        })
     })
-    .then(function(data){ 
-        if(data)
-            tools.success(req,res,'update delivery status successfully',orderDetailList);
-    })
-    
     .catch(function(err){
-        tools.error(req,res,'error catch changeDeliveryStatus',errorConfig.ACTION_FAIL,err);
+        tools.error(req,res, 'you are not admin', errorConfig.NOT_FOUND,err);
     })
 
 })
