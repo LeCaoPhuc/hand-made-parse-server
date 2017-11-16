@@ -5,7 +5,7 @@ var utils = require('./utils');
     tools = require('./tools');
     errorConfig = require('../config/error-config')
 
-Parse.Cloud.define('getColorList', function(req,res){
+Parse.Cloud.define('getMaterialList', function(req,res){
     if(!req.user) {
         tools.notLogin(req,res);
         return;
@@ -36,4 +36,34 @@ Parse.Cloud.define('getColorList', function(req,res){
             tools.error(req, res, 'error get list material',error, errorConfig.ACTION_FAIL);
         }
     });
+})
+
+Parse.Cloud.define('saveMaterial',function(req,res) {
+    if(!req.user) {
+        tools.notLogin(req,res);
+    }
+    var id = req.params.id;
+    var name = req.params.name;
+    if(!name) {
+        tools.error(req,res,'name was not undefine',errorConfig.REQUIRE);
+        return;
+    }
+    var Materrial = new Parse.Object.extend('Material');
+    var material = new Materrial();
+    if(id) { //craete
+        material.id = id;
+        material.set('material_name',name);
+    }
+    else {//update
+        if(name)
+            material.set('material_name',name);
+    }
+    material.save(null)
+    .then(function(result){
+        tools.success(req,res,'save material success', result);
+    })
+    .catch(function(err) {
+        tools.error(req,res,'error catch save material',errorConfig.ACTION_FAIL,err);
+    })
+
 })

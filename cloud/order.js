@@ -11,15 +11,22 @@ Parse.Cloud.define('getOrderList', function(req,res) {
     }
     var user = req.user;
     var type = req.params.type;
-    if(!type) {
-        tools.error(req, res, 'type is undefine', errorConfig.REQUIRE);
-        return;
-    }
+    var limit = req.params.limit ? req.params.limit : 1000;
+    var page = req.params.page ? req.params.page : 1;
     var query = new Parse.Query('Order')
     query.equalTo('buyer', user);
-    query.equalTo('delivery_status', type);
+    if(type == 'order') {
+        query.equalTo('delivery_status', type);
+    }
+    else {
+        if(type == 'bill') {
+            query.equalTo('delivery_status', type);
+        }
+    }
     query.descending('createdAt');
     query.notEqualTo('status', 'delete');
+    query.limit(limit);
+    query.skip((page-1)*limit);
     query.find() 
     .then(function(results){
         tools.success(req, res, 'get order list success', results);
@@ -131,6 +138,7 @@ Parse.Cloud.define('order', function(req,res) {
             order.set('buyer',user);
             order.set('delivery_address', address);
             order.set('delivery_status', deliveryStatus);
+            order.set('delivery_date', new Date());
             order.set('order_number', orderNumber);
             for(var i = 0 ; i < results.length; i++) {
                 if(results[i].get('promotion')) {
@@ -185,6 +193,86 @@ Parse.Cloud.define('order', function(req,res) {
     .catch(function(err){
        tools.error(req, res, 'order fail in catch',errorConfig.ACTION_FAIL, err);
     })
+})
+
+Parse.Cloud.define('changeDeliveryStatus',function(req,res){
+    if(!req.user) {
+        tools.notLogin(req,res);
+        return;
+    }
+    var orderId = req.params.id;
+    if(!orderId) {
+        tools.error(req,res,'orderId was not undefine',errorConfig.REQUIRE);
+    }
+    var order;
+    var orderDetailList ;
+    var Order = new Parse.Query('Order');
+    Order.get(orderId,{useMasterKey: true})
+    .then(function(result){
+        if(result) {
+            order = result;
+            var query = new Parse.Query('OrderDetail')
+            query.include('product_detail');
+            query.notEqualTo('status', 'delete');
+            return query.find()
+        }
+    })
+    .then(function(results){
+        var arrPromise = [];
+        orderDetailList = results;
+        if(order.get('delivery_status')=='order'){
+            for(var i in results) {
+                if(results[i].get('product_detail').get('quantity') < results[i].get('quantity_buy')) {
+                    return new Promise(function(resolve,reject){
+                        resolve({
+                            success: true,
+                            data: {
+                                quantity_buy: results[i].get('quantity_buy'),
+                                quantity_product: results[i].get('product_detail').get('quantity'),
+                                product_detail_id: results[i].get('product_detail').id
+                            },
+                            message: errorConfig.ERROR_DATA
+                        })
+                        return;
+                    })
+                } // if quantity in store < quantity buy
+                results[i].get('product_detail').set('quantity',results[i].get('product_detail').get('quantity')-results[i].get('quantity_buy'));
+                arrPromise.push(results[i].get('product_detail').save())
+            }
+        }
+        else {
+            for(var i in results) {
+                results[i].get('product_detail').set('quantity',results[i].get('product_detail').get('quantity') + results[i].get('quantity_buy'));
+                arrPromise.push(results[i].get('product_detail').save())
+            }
+        }
+        return Promise.all(arrPromise)
+    })
+    .then(function(responseData){
+        if(responseData && responseData.success) {
+            responseData.success = false;
+            res.success(responseData);
+        }
+        else {
+            if(order.get('delivery_status')=='order') {
+                    order.set('delivery_status','bill');
+                    return order.save()
+            }
+            else {
+                    order.set('delivery_status','order');
+                    return order.save()
+            }
+        }
+    })
+    .then(function(data){ 
+        if(data)
+            tools.success(req,res,'update delivery status successfully',orderDetailList);
+    })
+    
+    .catch(function(err){
+        tools.error(req,res,'error catch changeDeliveryStatus',errorConfig.ACTION_FAIL,err);
+    })
+
 })
 
 function autoCreateOrderNumber(shop) {

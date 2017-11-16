@@ -308,7 +308,77 @@ Parse.Cloud.define("getUserInfo", function(req,res){
         tools.error(req,res,'error get user info fail', errorConfig.ACTION_FAIL,error);
    })
 })
-
+Parse.Cloud.define('logInAdmin', function(req,res){
+    var username = req.params.username;
+    var password = req.params.password;
+    if(!username || !password) {
+        tools.error(req,res,'username or password undefine', errorConfig.REQUIRE);
+        return;
+    }
+    Parse.User.logIn(username,password)
+    .then(function(resuts){
+        tools.success(req,res,'logIn success', resuts);
+    })
+    .catch(function(err){
+        tools.error(req,res,'error catch logInAdmin', errorConfig.ACTION_FAIL, err);
+    })
+})
+Parse.Cloud.define('saveUserInfo', function(req,res){
+      if(!req.user) {
+        tools.notLogin(req,res);
+    }
+    var id = req.params.id;
+    var firstName = req.params.firstName;
+    var lastName = req.params.lastName;
+    var phoneNumber = req.params.phoneNumber;
+    var address = req.params.address;
+    var username = req.params.username;
+    var password = req.params.password;
+    var avatar = req.params.avatar;
+    var userType = req.params.usertype;
+    var gender = req.params.gender;
+    var email = req.params.email;
+    if(!username || !password || !firstName || !lastName) {
+        tools.error(req,res, 'username, password, firstName, lastName was not undefine');
+        return;
+    }
+    var User = new Parse.Object.extend(Parse.User);
+    var user = new User();
+    if(id) { //update
+       user.id = id;
+       user.set('first_name', firstName);
+       user.set('last_name', lastName);
+       user.set('password', password);
+       user.set('username', username);
+       if(avatar) {
+            user.set('avatar', avatar);
+       }
+       user.set('address', address);
+       user.set('user_type', userType);
+       user.set('gender', gender);
+       user.set('email', email);
+    }
+    else { //created
+       user.set('first_name', firstName);
+       user.set('last_name', lastName);
+       user.set('password', password);
+       user.set('username', username);
+       if(avatar) {
+            user.set('avatar', avatar);
+       }
+       user.set('address', address);
+       user.set('user_type', userType);
+       user.set('gender', gender);
+       user.set('email', email);
+    }
+    user.save(null,{useMasterKey : true})
+    .then(function(result){
+        tools.success(req,res,'save success',result);
+    })
+    .catch(function(err) {
+        tools.error(req,res,'error catch in saveUserInfo', errorConfig.ACTION_FAIL, err);
+    })
+})
 function checkEmailExists(email) {
     return new Promise(function (resolve, reject) {
         if(!email) {

@@ -22,6 +22,10 @@ var errorConfig = {
     ERROR_PARAMS : {
         code : 605,
         messgae : 'value of params os wrong'
+    },
+    ERROR_DATA : {
+        code : 606,
+        messgae : 'have wrong in data bond'
     }
 };
 module.exports = errorConfig;

@@ -38,3 +38,51 @@ Parse.Cloud.define('getColorList', function(req,res){
         }
     });
 })
+
+Parse.Cloud.define('saveColor',function(req,res) {
+    var id = req.params.id;
+    var name = req.params.name;
+    var code = req.params.code;
+    if(!req.user) {
+        tools.notLogin(req,res);
+    }
+    if(!name || !code) {
+        tools.error(req,res,'name and code was not undefine',errorConfig.REQUIRE);
+        return;
+    }
+    if(code.substr(0,1) != '#') {
+        code = '#' + code;
+    }
+    if(!id) { //craete
+        var Color = new Parse.Object.extend('Color');
+        var color = new Color();
+        color.set('color_name',name);
+        color.set('color_code',code);
+        color.save(null)
+        .then(function(result){
+            tools.success(req,res,'create color success', result);
+        })
+        .catch(function(err){
+            tools.error(req,res,'error catch save create color',errorConfig.ACTION_FAIL,err)
+        })
+    }
+    else {//update
+        var queryColor = new Parse.Query('Color');
+        queryColor.notEqualTo('status', 'delete');
+        queryColor.get(id)
+        .then(function(result){
+            result.set('color_name',name);
+            result.set('color_code',code);
+            result.save(null)
+            .then(function(results){
+                tools.success(req,res,'create color success', results);
+            })
+            .catch(function(err){
+                tools.error(req,res,'error catch save update color',errorConfig.ACTION_FAIL,err)
+            })
+        })
+        .catch(function(err){
+              tools.error(req,res,'error catch get color',errorConfig.ACTION_FAIL,err)
+        })
+    }
+})
