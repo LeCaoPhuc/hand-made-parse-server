@@ -19,7 +19,7 @@ Parse.Cloud.define('countObject',function(req,res){
     query.notEqualTo("status", "delete");
     query.count()
     .then(function(result){
-        tools.success(req,res,'coutn success',result);
+        res.success(result);
     })
     .catch(function(err){
         tools.error(req,res,'error catch countObject',errorConfig.ACTION_FAIL,err);
