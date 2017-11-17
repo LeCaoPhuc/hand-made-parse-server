@@ -198,6 +198,27 @@ Parse.Cloud.define('getProductListWithCategory',function(req,res){
     })
 })
 
+Parse.Cloud.define('getCountProductWithCategory',function(req,res){
+    if(!req.user) {
+        tools.notLogin(req,res);
+    }
+    var categoryId = req.params.categoryId;
+    var query = new Parse.Query('ProductDetail');
+    if(categoryId) {
+        var category = new Parse.Object('Category');
+        category.id = categoryId;
+        query.equalTo('category',category);
+    }
+    query.notContainedIn('status',['delete','block']);
+    query.count()
+    .then(function(results){
+        tools.success(req, res, 'count product list success', results);
+    })
+    .catch(function(err){
+        tools.error(req, res, 'count product list fail', errorConfig.ACTION_FAIL, err);
+    })
+})
+
 Parse.Cloud.define('getProductDetailWithId',function(req,res) { // == search with SKU
     if(!req.user) {
         tools.notLogin(req,res);
