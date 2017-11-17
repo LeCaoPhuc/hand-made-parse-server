@@ -308,7 +308,6 @@ Parse.Cloud.define("getUserInfo", function(req,res){
         tools.error(req,res,'error get user info fail', errorConfig.ACTION_FAIL,error);
    })
 })
-
 Parse.Cloud.define('saveUserInfo', function(req,res){
     if(!req.user) {
         tools.notLogin(req,res);
@@ -367,38 +366,38 @@ Parse.Cloud.define('saveUserInfo', function(req,res){
             tools.error(req,res,'error catch in saveUserInfo', errorConfig.ACTION_FAIL, err);
         })
     })
-    Parse.Cloud.define('getUserList',function(req,res){
-        if(!req.user) {
-            tools.notLogin(req,res);
-        }
-        var limit = req.params.limit;
-        var page = req.params.page;
-        if(!limit || !page) {
-            tools.error(req,res, 'params was not undefine', errorConfig.REQUIRE);
-            return;
-        }
-        else {
-            limit = parseInt(limit);
-            page = parseInt(page);
-            if(page < 1) {
-                tools.error(req,res, 'page must be larger than 0', errorConfig.ERROR_PARAMS);
-                return;
-            }
-        }
-        var query = new Parse.Query('User');
-        query.notContainedIn('status',['delete']);
-        query.limit(limit);
-        query.skip((page-1)*limit);
-        query.find()
-        .then(function(results){
-            tools.success(req, res, 'get product list success', results);
-        })
-        .catch(function(err){
-            tools.error(req, res, 'get product list fail', errorConfig.ACTION_FAIL, err);
-        })
-    })
     .catch(function(err){
         tools.error(req,res, 'you are not admin', errorConfig.NOT_FOUND,err);
+    })
+})
+  Parse.Cloud.define('getUserList',function(req,res){
+    if(!req.user) {
+        tools.notLogin(req,res);
+    }
+    var limit = req.params.limit;
+    var page = req.params.page;
+    if(!limit || !page) {
+        tools.error(req,res, 'params was not undefine', errorConfig.REQUIRE);
+        return;
+    }
+    else {
+        limit = parseInt(limit);
+        page = parseInt(page);
+        if(page < 1) {
+            tools.error(req,res, 'page must be larger than 0', errorConfig.ERROR_PARAMS);
+            return;
+        }
+    }
+    var query = new Parse.Query('User');
+    query.notContainedIn('status',['delete']);
+    query.limit(limit);
+    query.skip((page-1)*limit);
+    query.find()
+    .then(function(results){
+        tools.success(req, res, 'get product list success', results);
+    })
+    .catch(function(err){
+        tools.error(req, res, 'get product list fail', errorConfig.ACTION_FAIL, err);
     })
 })
 function checkEmailExists(email) {
