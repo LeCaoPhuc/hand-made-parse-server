@@ -6,7 +6,7 @@ mailer = require('nodemailer');
 errorConfig = require('../config/error-config')
 tools = require('./tools');
 
-Parse.Cloud.define('getPromotionList', function (req, res) {
+Parse.Cloud.define('getListPromotion', function (req, res) {
     if (!req.user) {
         tools.notLogin(req, res);
     }
