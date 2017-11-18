@@ -16,6 +16,9 @@ Parse.Cloud.define('countObject',function(req,res){
         return;
     }
     var query = new Parse.Query(className);
+    if(className == 'User'){
+        query.notEqualTo('user_type','admin');
+    }
     query.notEqualTo("status", "delete");
     query.count()
     .then(function(result){
