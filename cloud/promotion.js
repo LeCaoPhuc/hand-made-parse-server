@@ -56,3 +56,14 @@ Parse.Cloud.define('savePromotion',function(req,res){
         tools.error(req,res, 'you are not admin', errorConfig.NOT_FOUND,err);
     })
 })
+
+Parse.Cloud.define('getPromotionList', function(req, res){
+    var query = new Parse.Query('Promotion');
+    query.greaterThanOrEqualTo('end_date', new Date());
+    query.limit(1000);
+    query.find().then(function(data){
+        tools.success(req, res, 'Promotionlist', data);
+    }).catch(function(err){
+        tools.error(req, res, 'get promotion list error', err);
+    })
+})
