@@ -295,7 +295,7 @@ Parse.Cloud.define('getProductDetailWithSKU', function (req, res) {
         })
 })
 
-Parse.Cloud.define('getProductList', function(req, res){
+Parse.Cloud.define('getProductList', function (req, res) {
     if (!req.user) {
         tools.notLogin(req, res);
     }
@@ -332,7 +332,7 @@ Parse.Cloud.define('getProductList', function(req, res){
         })
 })
 
-Parse.Cloud.define('getProductDetailById', function(req, res){
+Parse.Cloud.define('getProductDetailById', function (req, res) {
     if (!req.user) {
         tools.notLogin(req, res);
     }
@@ -366,4 +366,46 @@ Parse.Cloud.define('getCountProduct', function (req, res) {
         .catch(function (err) {
             tools.error(req, res, 'count product list fail', errorConfig.ACTION_FAIL, err);
         })
+})
+
+Parse.Cloud.define('deleteProductDetail', function (req, res) {
+    if (!req.user) {
+        tools.notLogin(req, res);
+        return;
+    }
+    var query = new Parse.Query('ProductDetail');
+    query.get(req.params.id).then(function (product) {
+        if (product) {
+            product.destroy().then(function () {
+                tools.success(req, res, 'delete product detail success');
+            }).catch(function (err) {
+                tools.error(req, res, 'delete product detail error', err);
+            })
+        } else {
+            tools.error(req, res, 'delete product detail error');
+        }
+    }).catch(function (err) {
+        tools.error(req, res, 'delete product detail error', err);
+    })
+})
+
+Parse.Cloud.define('deleteProduct', function (req, res) {
+    if (!req.user) {
+        tools.notLogin(req, res);
+        return;
+    }
+    var query = new Parse.Query('Product');
+    query.get(req.params.id).then(function (product) {
+        if (product) {
+            product.destroy().then(function () {
+                tools.success(req, res, 'delete product detail success');
+            }).catch(function (err) {
+                tools.error(req, res, 'delete product detail error', err);
+            })
+        } else {
+            tools.error(req, res, 'delete product detail error');
+        }
+    }).catch(function (err) {
+        tools.error(req, res, 'delete product detail error', err);
+    })
 })
