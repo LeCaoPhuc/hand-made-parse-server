@@ -38,7 +38,6 @@ Parse.Cloud.define('getPromotion', function (req, res) {
             var promotionId = req.params.promotionId;
             var promotionQuery = new Parse.Query('Promotion');
             promotionQuery.notEqualTo('status', 'delete');
-            var currentDate = new Date();
             return promotionQuery.get(promotionId, { useMasterKey: true });
         })
         .then(function (promotion) {
