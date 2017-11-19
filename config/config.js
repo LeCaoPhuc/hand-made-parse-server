@@ -1,8 +1,13 @@
-var env = process.env.ENV || 'dev'
+var env = process.env.ENV || 'local'
 , path = require('path')
 , configs = {};
+<<<<<<< HEAD
 // var url = 'http://192.168.43.231:';
 var url = 'http://192.168.1.157:';
+=======
+var url = 'http://192.168.1.129:';
+// var url = 'http://192.168.1.157:';
+>>>>>>> a1f3d8ec969f2b45b1c9a4e27f2ddddea5df105c
 configs.dev = {
     
     port: 3000,
