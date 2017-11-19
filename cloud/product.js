@@ -183,7 +183,7 @@ Parse.Cloud.define('getProductListWithCategory', function (req, res) {
         category.id = categoryId;
         query.equalTo('category', category);
     }
-    query.notContainedIn('status', ['delete', withBlock ? 'block' : undefined]);
+    query.notContainedIn('status', ['delete', withBlock ? 'block' : '']);
     query.include('product');
     query.include('color');
     query.include('material');

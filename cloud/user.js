@@ -333,13 +333,26 @@ Parse.Cloud.define('saveUserInfo', function (req, res) {
                 if (status) {
                     user.set('status', status);
                 }
-                user.set('address', address);
-                user.set('user_type', userType);
-                user.set('gender', gender);
+                else {
+                    if(status == null) {
+                         user.set('status', '');
+                    }
+                }
+                if(address) {
+                    user.set('address', address);
+                }
+                if(userType){
+                    user.set('user_type', userType);
+                }
+                if(gender) {
+                    user.set('gender', gender);
+                }
                 if (email) {
                     user.set('email', email);
                 }
-                user.set('phone_number', phoneNumber);
+                if(phoneNumber) {
+                    user.set('phone_number', phoneNumber);
+                }
             }
             else { //created
                 user.set('first_name', firstName);
@@ -352,13 +365,26 @@ Parse.Cloud.define('saveUserInfo', function (req, res) {
                 if (status) {
                     user.set('status', status);
                 }
-                user.set('address', address);
-                user.set('user_type', userType);
-                user.set('gender', gender);
+                else {
+                    if(status == null) {
+                         user.set('status', '');
+                    }
+                }
+                if(address) {
+                    user.set('address', address);
+                }
+                if(userType){
+                    user.set('user_type', userType);
+                }
+                if(gender) {
+                    user.set('gender', gender);
+                }
                 if (email) {
                     user.set('email', email);
                 }
-                user.set('phone_number', phoneNumber);
+                if(phoneNumber) {
+                    user.set('phone_number', phoneNumber);
+                }
             }
             if (email) {
                 checkEmailExists(email)
@@ -439,6 +465,7 @@ Parse.Cloud.define('getUserList', function (req, res) {
     }
     var query = new Parse.Query('User');
     query.notContainedIn('status', ['delete']);
+    query.descending('createdAt');
     query.notEqualTo('user_type', 'admin');
     query.limit(limit);
     query.skip((page - 1) * limit);
@@ -476,6 +503,7 @@ function checkUserExists(username) {
         }
         var query = new Parse.Query('User');
         query.equalTo('username', username);
+         query.equalTo('status','delete');
         query.first().then(function (user) {
             if (user) resolve(user);
             else resolve();

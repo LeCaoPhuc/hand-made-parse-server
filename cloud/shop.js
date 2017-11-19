@@ -31,16 +31,16 @@ Parse.Cloud.define('saveShop',function(req,res){
     }
     tools.checkAdmin(req.user)
     .then(function(result){
-        var shopName = req.params.shopName;
+        var shopName = req.params.shopname;
         var address = req.params.address;
-        var phoneNumber = req.params.phoneNumber;
+        var phoneNumber = req.params.phonenumber;
         var description = req.params.description;
         var latitude = req.params.latitude;
         var longitude = req.params.longitude;
-        var timeOpen = req.params.timeOpen;
+        var timeOpen = req.params.timeopen;
         var id = req.params.id;
         var user = req.user;
-        if(!shopName || !address || !phoneNumber || !latitude || !longitude) {
+        if(!shopName || !address || !phoneNumber || !latitude || !longitude || !timeOpen) {
             tools.error(req,res,'some property undefine',errorConfig.REQUIRE);
             return;
         }
