@@ -101,7 +101,6 @@ Parse.Cloud.define('order', function(req,res) {
     }
     var user = req.user;
     var address = req.params.address;
-    var shopId = req.params.shopId || 'SVGHiY4qfA';
     var items = req.params.items;
     var totalPrice = 0;
     var orderNumber = '';
@@ -120,9 +119,7 @@ Parse.Cloud.define('order', function(req,res) {
     for(var i= 0; i < items.length; i++) {
         productIdArr.push(items[i].id);
     }
-    var shop = new Parse.Object("Shop");
-    shop.id = shopId;
-    autoCreateOrderNumber(shop)
+    autoCreateOrderNumber()
     .then(function(orderNumberString){
         orderNumber = orderNumberString;
         var productDetailQuery = new Parse.Query('ProductDetail');
@@ -138,19 +135,22 @@ Parse.Cloud.define('order', function(req,res) {
             productDetails = results;
             var Order = Parse.Object.extend("Order");
             var order = new Order();
-            order.set('shop', shop);
             order.set('buyer',user);
             order.set('delivery_address', address);
             order.set('delivery_status', deliveryStatus);
             order.set('delivery_date', new Date());
             order.set('order_number', orderNumber);
             for(var i = 0 ; i < results.length; i++) {
-                if(results[i].get('promotion')) {
-                    var price = results[i].get('promotion').get('percent')*results[i].get('price');
-                    totalPrice += price;
-                }
-                else {
-                    totalPrice += results[i].get('price');
+                for(var j = 0; j < items.length ; j++) {
+                    if(results[i].id == items[j].id) {
+                        if(results[i].get('promotion')) {
+                            var price = results[i].get('promotion').get('percent')*results[i].get('price')*parseFloat(items[j].qty);
+                            totalPrice += price;
+                        }
+                        else {
+                            totalPrice += results[i].get('price') * parseFloat(items[j].qty);
+                        }
+                    }
                 }
             }
             order.set('total_price',totalPrice);
@@ -406,7 +406,7 @@ Parse.Cloud.define('deleteOrder',function(req,res){
         tools.error(req,res, 'you are not admin', errorConfig.NOT_FOUND,err);
     })
 })
-function autoCreateOrderNumber(shop) {
+function autoCreateOrderNumber() {
     return new Promise(function(resolve, reject) {
         var query = new Parse.Query('Order');
         query.notEqualTo('status', 'delete');
