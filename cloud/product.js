@@ -347,6 +347,20 @@ Parse.Cloud.define('getProductDetailById', function (req, res) {
         })
 })
 
+Parse.Cloud.define('getProductDetailWithProductDetailId', function (req, res) {
+    if (!req.user) {
+        tools.notLogin(req, res);
+    }
+    var productdDetailId = req.params.id;
+    var query = new Parse.Query('ProductDetail');
+    query.get(productdDetailId)
+        .then(function (results) {
+            tools.success(req, res, 'get product detail success', results);
+        })
+        .catch(function (err) {
+            tools.error(req, res, 'get product detail fail', errorConfig.ACTION_FAIL, err);
+        })
+})
 Parse.Cloud.define('getCountProduct', function (req, res) {
     if (!req.user) {
         tools.notLogin(req, res);
@@ -368,6 +382,34 @@ Parse.Cloud.define('getCountProduct', function (req, res) {
         })
 })
 
+Parse.Cloud.define('saveQuantityProductDetail',function(req,res){
+    if (!req.user) {
+        tools.notLogin(req, res);
+    }
+    var quantity = req.params.quantity;
+    var id = req.params.id;
+    if(!id || !quantity) {
+        tools.error(req,res,'params was not undefine',errorConfig.REQUIRE);
+        return;
+    }
+    tools.checkAdmin(req.user)
+    .then(function (result) {
+        var ProductDetail = new Parse.Object.extend('ProductDetail');
+        var productDetail = new ProductDetail();
+        productDetail.id = id;
+        productDetail.set('quantity',quantity);
+        productDetail.save(null,{useMasterKey: true})
+        .then(function(result){
+            tools.success(req,res,'save product detail success',result);
+        })
+        .catch(function(err){
+             tools.error(req, res, 'error inside catch', errorConfig.NOT_FOUND, err);
+        })
+    })
+    .catch(function(err){
+       tools.error(req, res, 'you are not admin', errorConfig.NOT_FOUND, err);
+    })
+})
 Parse.Cloud.define('deleteProductDetail', function (req, res) {
     if (!req.user) {
         tools.notLogin(req, res);

@@ -234,7 +234,7 @@ Parse.Cloud.define('changeDeliveryStatus',function(req,res){
                                 data: {
                                     quantity_buy: results[i].get('quantity_buy'),
                                     quantity_product: results[i].get('product_detail').get('quantity'),
-                                    product_detail_id: results[i].get('product_detail').id
+                                    product_detail: results[i].get('product_detail')
                                 },
                                 message: errorConfig.ERROR_DATA
                             })
@@ -273,7 +273,6 @@ Parse.Cloud.define('changeDeliveryStatus',function(req,res){
             if(data)
                 tools.success(req,res,'update delivery status successfully',orderDetailList);
         })
-        
         .catch(function(err){
             tools.error(req,res,'error catch changeDeliveryStatus',errorConfig.ACTION_FAIL,err);
         })
@@ -344,6 +343,7 @@ Parse.Cloud.define('saveOrder',function(req,res){
     .then(function(result){ 
         var Order = Parse.Object.extend("Order");
         var order = new Order();
+        order.id = id;
         if(delivery_date) {
             order.set('delivery_date',delivery_date);
         }
@@ -359,12 +359,57 @@ Parse.Cloud.define('saveOrder',function(req,res){
         tools.error(req,res, 'you are not admin', errorConfig.NOT_FOUND,err);
     })
 })
+
+Parse.Cloud.define('deleteOrder',function(req,res){
+    if(!req.user) {
+        tools.notLogin(req,res);
+        return;
+    }
+    var id = req.params.id;
+    if(!id) {
+        tools.error(req, res, 'order id is undefine', errorConfig.REQUIRE);
+        return;
+    }
+    tools.checkAdmin(req.user)
+    .then(function(result){
+        var Order = new Parse.Object.extend('Order');
+        var order = new Order();
+        order.id = id;
+        var query = new Parse.Query('OrderDetail');
+        query.equalTo('order',order);
+        query.notEqualTo('status','delete');
+        query.find({useMasterKey: true})
+        .then(function(results){
+            for(var i in results){
+                results[i].set('status','delete')
+            }
+            Parse.Object.saveAll(results)
+            .then(function(result){
+                order.set('status','delete');
+                order.save({useMasterKey: true})
+                .then(function(response){
+                     tools.success(req,res,'delete order success',result);
+                })
+                .catch(function(err){
+                     tools.error(req,res, 'error inside catch save order', errorConfig.NOT_FOUND,err);
+                })
+            })
+            .catch(function(err){
+                tools.error(req,res, 'error inside catch saveAll', errorConfig.NOT_FOUND,err);
+            })
+        })
+        .catch(function(err){
+            tools.error(req,res, 'error inside catch find', errorConfig.NOT_FOUND,err);
+        })
+    })
+    .catch(function(err){
+        tools.error(req,res, 'you are not admin', errorConfig.NOT_FOUND,err);
+    })
+})
 function autoCreateOrderNumber(shop) {
     return new Promise(function(resolve, reject) {
         var query = new Parse.Query('Order');
-        query.equalTo('shop', shop);
         query.notEqualTo('status', 'delete');
-        query.include('shop');
         query.descending('order_number');
         query.first()
         .then(function(order) {
