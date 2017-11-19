@@ -11,11 +11,11 @@
             "program": "${workspaceRoot}/index.js",
             "env": {
                 "PORT": "3000",
-                "ENV": "dev",
+                "ENV": "local",
                 "APP_NAME": "LuanVan.App",
                 "APP_ID": "luan-van-app-id",
                 "MASTER_KEY": "hand-made-masterkey",
-                "SERVER_URL": "http://192.168.1.158:3000/parse",
+                "SERVER_URL": "http://192.168.43.231:3000/parse",
                 "PARSE_MOUNT": "/parse",
                 "DATABASE_URI": "mongodb://127.0.0.1:27017/luanvan_local"   
             }
