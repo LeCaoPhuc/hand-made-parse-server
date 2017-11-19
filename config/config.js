@@ -1,7 +1,11 @@
 var env = process.env.ENV || 'dev'
 , path = require('path')
 , configs = {};
+<<<<<<< HEAD
 var url = 'http://192.168.43.231:';
+=======
+var url = 'http://192.168.1.157:';
+>>>>>>> 6a01845904579bd6368a620ce7823996ac5852e8
 configs.dev = {
     
     port: 3000,
@@ -11,8 +15,8 @@ configs.dev = {
         pass: 'r00t'
     }],
     parseServer: {
-        //  databaseURI : `mongodb://root:r00t@cluster0-shard-00-00-jzqxp.mongodb.net:27017,cluster0-shard-00-01-jzqxp.mongodb.net:27017,cluster0-shard-00-02-jzqxp.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin`,
-        databaseURI: 'mongodb://root:r00t@cluster0-shard-00-00-jzqxp.mongodb.net:27017,cluster0-shard-00-01-jzqxp.mongodb.net:27017,cluster0-shard-00-02-jzqxp.mongodb.net:27017/luanvan?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin',
+        // databaseURI: 'mongodb://root:r00t@cluster0-shard-00-00-jzqxp.mongodb.net:27017,cluster0-shard-00-01-jzqxp.mongodb.net:27017,cluster0-shard-00-02-jzqxp.mongodb.net:27017/luanvan?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin',
+        databaseURI: "mongodb://iamroot:%21%23%24%25%5E%26DFGHCVBerty789oijnbadmin@192.168.1.28/luanvan?authSource=admin&3t.uriVersion=2&3t.connectionMode=direct&readPreference=primary",
         cloud: path.resolve('./cloud/main.js'),
         appId: process.env.APP_ID || 'luan-van-app-id',
         appName: 'LuanVan.App',

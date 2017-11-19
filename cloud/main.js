@@ -7,3 +7,6 @@ require('./product');
 require('./order');
 require('./notify');
 require('./search');
+require('./promotion');
+require('./count');
+require('./delete');

@@ -6,21 +6,15 @@ var utils = require('./utils');
     errorConfig = require('../config/error-config')
 
 Parse.Cloud.define('getShopInfo',function(req,res) {
-    var shopId = req.params.shopId || 'SVGHiY4qfA';
     if(!req.user){
         tools.notLogin(req,res);
     }
-    if(!shopId) {
-        tools.error(req,res,'undefine shop id',errorConfig.REQUIRE);
-        return;
-    }
     var query = new Parse.Query('Shop');
     query.notContainedIn('status',['block','delete']);
-    query.include('shop_owner');
-    query.get(shopId)
-    .then(function (shop) {
-        if (shop){
-            tools.success(req,res,'get user info success',shop);
+    query.find()
+    .then(function (shops) {
+        if (shops && shops.length > 0){
+            tools.success(req,res,'get user info success',shops[0]);
         }
         else {
             tools.error(req,res,'shop not found',errorConfig.NOT_FOUND);
@@ -31,48 +25,67 @@ Parse.Cloud.define('getShopInfo',function(req,res) {
     })
 })
 
-Parse.Cloud.define('createShop',function(req,res){
+Parse.Cloud.define('saveShop',function(req,res){
     if(!req.user) {
         tools.notLogin(req,res);
     }
-    var shopName = req.params.shopName;
-    var address = req.params.address;
-    var phoneNumber = req.params.phoneNumber;
-    var description = req.params.description;
-    var user = req.user;
-    if(!shopName || !address || !phoneNumber) {
-        tools.error(req,res,'some property undefine',errorConfig.REQUIRE);
-        return;
-    }
-    else {
-        checkShopExists(shopName)
-        .then(function(shop){
-            if(shop) {
-                tools.error(req,res,'shop name exists', errorConfig.EXIST);
+    tools.checkAdmin(req.user)
+    .then(function(result){
+        var shopName = req.params.shopname;
+        var address = req.params.address;
+        var phoneNumber = req.params.phonenumber;
+        var description = req.params.description;
+        var latitude = req.params.latitude;
+        var longitude = req.params.longitude;
+        var timeOpen = req.params.timeopen;
+        var id = req.params.id;
+        var user = req.user;
+        if(!shopName || !address || !phoneNumber || !latitude || !longitude || !timeOpen) {
+            tools.error(req,res,'some property undefine',errorConfig.REQUIRE);
+            return;
+        }
+        else {
+            if(user.get('user_type')!='admin'){
+                tools.error(req,res,'you have not permission',errorConfig.ACTION_FAIL);
+                return;
             }
-            else {
-                var Shop = Parse.Object.extend("Shop");
-                var shop = new Shop();
+            var Shop = new Parse.Object.extend("Shop");
+            var shop = new Shop();
+            if(id) {
+                shop.id = id;
                 shop.set('shop_name', shopName);
                 shop.set('shop_phone_number', phoneNumber);
                 shop.set('shop_address', address),
+                shop.set('latitude',latitude);
+                shop.set('longitude',longitude);
+                shop.set('time_open',timeOpen);
                 shop.set('shop_owner',user);
                 if(description) shop.set('shop_description', description);
-                shop.save(null,{
-                    success: function(shop) {
-                        tools.success(req,res,'create shop success',shop);
-                    },
-                    error: function(gameScore, error) {
-                        tools.error(req,res,'create shop fail', error,errorConfig.ACTION_FAIL.code);
-                    }
-                })
             }
-        })
-        .catch(function(err){
-             tools.error(req,res,'error check shop exist', err,errorConfig.ACTION_FAIL.code);
-        })
-    }  
+            else {
+                shop.set('shop_name', shopName);
+                shop.set('shop_phone_number', phoneNumber);
+                shop.set('shop_address', address);
+                shop.set('time_open',timeOpen);
+                shop.set('latitude',latitude);
+                shop.set('longitude',longitude);
+                if(description) shop.set('shop_description', description);
+            }
+            shop.save(null,{
+                success: function(shop) {
+                    tools.success(req,res,'create shop success',shop);
+                },
+                error: function(gameScore, error) {
+                    tools.error(req,res,'create shop fail', error,errorConfig.ACTION_FAIL.code);
+                }
+            })
+        }  
+    })
+    .catch(function(err){
+        tools.error(req,res, 'you are not admin', errorConfig.NOT_FOUND,err);
+    })
 })
+
 
 function checkShopExists(shopName) {
     return new Promise(function (resolve, reject) {

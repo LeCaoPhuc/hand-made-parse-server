@@ -29,6 +29,7 @@ Parse.Cloud.define('getCategoryList', function(req,res){
         }
     }
     query.notContainedIn('status', ['delete','block']);
+    query.notEqualTo('count_product',0);
     query.limit(limit);
     query.skip((page-1)*limit);
     query.find({
@@ -39,4 +40,53 @@ Parse.Cloud.define('getCategoryList', function(req,res){
             tools.error(req, res, 'error get list category',error, errorConfig.ACTION_FAIL);
         }
     });
+})
+
+Parse.Cloud.define('saveCategory',function(req,res){
+    if(!req.user) {
+        tools.notLogin(req,res);
+        return;
+    }
+    var id = req.params.id;
+    var image = req.params.image;
+    var name = req.params.name;
+    var productCount = req.params.productCount;
+    var Category = new Parse.Object.extend('Category');
+    var category = new Category();
+    if(id) { //update
+        category.id = id;
+        if(name) {
+            category.set('category_name',name);
+        }
+        if(image) {
+             category.set('image',image);
+        }
+         if(productCount) {
+             category.set('count_product',productCount);
+        }
+        else {
+            category.set('count_product',0);
+        }
+    }
+    else {//created
+        if(!name || !image) {
+            tools.error(req,res,'name was not undefine',errorConfig.REQUIRE);
+            return;
+        }
+        category.set('category_name',name);
+        category.set('image',image);
+        if(productCount) {
+             category.set('count_product',productCount);
+        }
+        else {
+            category.set('count_product',0);
+        }
+    }
+    category.save(null)
+    .then(function(result){
+        tools.success(req,res,'save category success', result);
+    })
+    .catch(function(err) {
+        tools.error(req,res,'error catch save category',errorConfig.ACTION_FAIL,err);
+    })
 })

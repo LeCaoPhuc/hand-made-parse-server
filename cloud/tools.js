@@ -22,7 +22,7 @@ function success(req, res, message, data, lastPage) {
         message: message,
         data: data
     }
-    if(lastPage) {
+    if (lastPage) {
         responseData.lastPage = lastPage;
     }
     if (res) res.success(responseData);
@@ -45,14 +45,30 @@ function error(req, res, message, error, code) {
     }
     else return responseData;
 }
-function notLogin(req,res) {
-    error(req,res, 'you are not login');
+function notLogin(req, res) {
+    error(req, res, 'you are not login');
 }
-
+function checkAdmin(user) {
+    return new Promise(function (resolve, reject) {
+        user.fetch()
+            .then(function (result) {
+                if (result && result.get('user_type') == 'admin') {
+                    resolve(result);
+                }
+                else {
+                    reject(result);
+                }
+            })
+            .catch(function (err) {
+                reject(err);
+            })
+    })
+}
 module.exports = {
     getUserById,
     cloneUserInfo,
     notLogin,
     error,
-    success
+    success,
+    checkAdmin
 }
