@@ -49,7 +49,7 @@ Parse.Cloud.define('saveShop',function(req,res){
                 tools.error(req,res,'you have not permission',errorConfig.ACTION_FAIL);
                 return;
             }
-            var Shop = Parse.Object.extend("Shop");
+            var Shop = new Parse.Object.extend("Shop");
             var shop = new Shop();
             if(id) {
                 shop.id = id;

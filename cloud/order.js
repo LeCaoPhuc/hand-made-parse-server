@@ -10,24 +10,28 @@ Parse.Cloud.define('getOrderList', function(req,res) {
         return;
     }
     var user = req.user;
+    var isAdmin =  req.params.isAdmin
     var type = req.params.type;
     var limit = req.params.limit ? req.params.limit : 1000;
     var page = req.params.page ? req.params.page : 1;
     var query = new Parse.Query('Order')
-    query.equalTo('buyer', user);
+    if(!isAdmin) {
+        query.equalTo('buyer', user);
+    }
     if(type == 'order') {
-        query.equalTo('delivery_status', type);
+        query.equalTo('delivery_status', 'order');
     }
     else {
         if(type == 'bill') {
-            query.equalTo('delivery_status', type);
+            query.equalTo('delivery_status', 'bill');
         }
     }
     query.descending('createdAt');
     query.notEqualTo('status', 'delete');
+    query.include('buyer');
     query.limit(limit);
     query.skip((page-1)*limit);
-    query.find() 
+    query.find({useMasterKey: true}) 
     .then(function(results){
         tools.success(req, res, 'get order list success', results);
     })
@@ -194,7 +198,6 @@ Parse.Cloud.define('order', function(req,res) {
        tools.error(req, res, 'order fail in catch',errorConfig.ACTION_FAIL, err);
     })
 })
-
 Parse.Cloud.define('changeDeliveryStatus',function(req,res){
     if(!req.user) {
         tools.notLogin(req,res);
@@ -280,7 +283,82 @@ Parse.Cloud.define('changeDeliveryStatus',function(req,res){
     })
 
 })
+Parse.Cloud.define('countOrder',function(req,res){
+    if(!req.user) {
+        tools.notLogin(req,res);
+        return;
+    }
+    var type = req.params.type;
+    var query = new Parse.Query('Order')
+    query.notEqualTo('status', 'delete');
+    if(type == 'order') {
+        query.equalTo('delivery_status', type);
+    }
+    else {
+        if(type == 'bill') {
+            query.equalTo('delivery_status', type);
+        }
+    }
+    query.count() 
+    .then(function(results){
+        res.success(results);
+    })
+    .catch(function(err){
+        tools.error(req, res, 'get order list fail', errorConfig.ACTION_FAIL, err);
+    })
+})
+Parse.Cloud.define('getOrderWithId',function(req,res){
+    if(!req.user) {
+        tools.notLogin(req,res);
+        return;
+    }
+    var orderId = req.params.id;
+    if(!orderId) {
+        tools.error(req, res, 'order id is undefine', errorConfig.REQUIRE);
+        return;
+    }
+    var query = new Parse.Query('Order')
+    query.notEqualTo('status', 'delete');
+    query.include('buyer');
+    query.get(orderId,{useMasterKey: true}) 
+    .then(function(results){
+       tools.success(req, res, 'get order detail success', results);
+    })
+    .catch(function(err){
+        tools.error(req, res, 'get order list fail', errorConfig.ACTION_FAIL, err);
+    })
+})
 
+Parse.Cloud.define('saveOrder',function(req,res){
+    if(!req.user) {
+        tools.notLogin(req,res);
+        return;
+    }
+    var id = req.params.id;
+    var delivery_date = req.params.delivery_date;
+    if(!id) {
+        tools.error(req, res, 'order id is undefine', errorConfig.REQUIRE);
+        return;
+    }
+    tools.checkAdmin(req.user)
+    .then(function(result){ 
+        var Order = Parse.Object.extend("Order");
+        var order = new Order();
+        if(delivery_date) {
+            order.set('delivery_date',delivery_date);
+        }
+        order.save(null,{useMasterKey: true})
+        .then(function(results){
+            tools.success(req,res,'save order success',results);
+        })
+        .catch(function(err){
+             tools.error(req,res, 'error inside catch save', errorConfig.ACTION_FAIL,err);
+        })
+    })
+    .catch(function(err){
+        tools.error(req,res, 'you are not admin', errorConfig.NOT_FOUND,err);
+    })
+})
 function autoCreateOrderNumber(shop) {
     return new Promise(function(resolve, reject) {
         var query = new Parse.Query('Order');
