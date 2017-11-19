@@ -397,8 +397,18 @@ Parse.Cloud.define('deleteProduct', function (req, res) {
     var query = new Parse.Query('Product');
     query.get(req.params.id).then(function (product) {
         if (product) {
-            product.destroy().then(function () {
-                tools.success(req, res, 'delete product detail success');
+            var productDetailQuery = new Parse.Query('ProductDetail');
+            productDetailQuery.equalTo('product', product);
+            productDetailQuery.find().then(function (products) {
+                Parse.Object.destroyAll(products).then(function () {
+                    product.destroy().then(function () {
+                        tools.success(req, res, 'delete product detail success');
+                    }).catch(function (err) {
+                        tools.error(req, res, 'delete product detail error', err);
+                    })
+                }).catch(function (err) {
+                    tools.error(req, res, 'delete product detail error', err);
+                })
             }).catch(function (err) {
                 tools.error(req, res, 'delete product detail error', err);
             })
