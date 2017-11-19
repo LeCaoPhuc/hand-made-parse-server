@@ -280,7 +280,6 @@ Parse.Cloud.define('changeDeliveryStatus',function(req,res){
     .catch(function(err){
         tools.error(req,res, 'you are not admin', errorConfig.NOT_FOUND,err);
     })
-
 })
 Parse.Cloud.define('countOrder',function(req,res){
     if(!req.user) {
@@ -327,7 +326,6 @@ Parse.Cloud.define('getOrderWithId',function(req,res){
         tools.error(req, res, 'get order list fail', errorConfig.ACTION_FAIL, err);
     })
 })
-
 Parse.Cloud.define('saveOrder',function(req,res){
     if(!req.user) {
         tools.notLogin(req,res);
@@ -359,7 +357,6 @@ Parse.Cloud.define('saveOrder',function(req,res){
         tools.error(req,res, 'you are not admin', errorConfig.NOT_FOUND,err);
     })
 })
-
 Parse.Cloud.define('deleteOrder',function(req,res){
     if(!req.user) {
         tools.notLogin(req,res);
@@ -450,3 +447,62 @@ function autoCreateOrderNumber() {
         })
     })
 }
+
+Parse.Cloud.define('updateOrderDetailQuantity', function (req, res) {
+    var orderId = req.params.orderId;
+    var quantity = req.params.quantity;
+    var query = new Parse.Query('OrderDetail');
+    query.get(orderId).then(function (orderDetail) {
+        var prevTotalPrice = orderDetail.get('quantity_buy') * orderDetail.get('unit_price');
+        orderDetail.set('quantity_buy', quantity);
+        orderDetail.set('total_price_product', quantity * orderDetail.get('unit_price'));
+        orderDetail.save().then(function (updateOrderDetail) {
+            var currentTotalPrice = updateOrderDetail.get('quantity_buy') * updateOrderDetail.get('unit_price');
+            // tools.success(req, res, 'Update quantity success', orderDetail);
+            var orderQuery = new Parse.Query('Order');
+            orderQuery.get(updateOrderDetail.get('order').id).then(function (order) {
+                order.set('total_price', order.get('total_price') + (currentTotalPrice - prevTotalPrice));
+                order.save().then(function () {
+                    tools.success(req, res, 'Update quantity success', orderDetail);
+                }).catch(function (err) {
+                    tools.error(req, res, 'Update quantity error', err);
+                })
+            })
+
+        }).catch(function (err) {
+            tools.error(req, res, 'Update quantity error', err);
+        })
+    }).catch(function (err) {
+        tools.error(req, res, 'Update quantity error', err);
+    })
+})
+
+Parse.Cloud.define('deleteOrderDetailQuantity', function (req, res) {
+    var orderId = req.params.orderId;
+    var query = new Parse.Query('OrderDetail');
+    query.get(orderId).then(function (orderDetail) {
+        var prevTotalPrice = orderDetail.get('quantity_buy') * orderDetail.get('unit_price');
+        orderDetail.destroy().then(function () {
+            var orderQuery = new Parse.Query('Order');
+            orderQuery.get(orderDetail.get('order').id).then(function (order) {
+                var totalPrice = order.get('total_price') - prevTotalPrice;
+                if (totalPrice <= 0) {
+                    order.destroy().then(function (updateOrderDetail) {
+                        tools.success(req, res, 'Update quantity success', orderDetail);
+                    }).catch(function (err) {
+                        tools.error(req, res, 'Update quantity error', err);
+                    })
+                } else {
+                    order.set('total_price', totalPrice);
+                    order.save().then(function (updateOrderDetail) {
+                        tools.success(req, res, 'Update quantity success', orderDetail);
+                    }).catch(function (err) {
+                        tools.error(req, res, 'Update quantity error', err);
+                    })
+                }
+            })
+        })
+    }).catch(function (err) {
+        tools.error(req, res, 'Update quantity error', err);
+    })
+})
