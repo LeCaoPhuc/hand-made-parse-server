@@ -92,7 +92,7 @@ Parse.Cloud.define('saveProductDetail', function (req, res) {
             var quantity = req.params.quantity;
             var status = req.params.status;
             var id = req.params.id;
-            if (!productId || !categoryId || !image || !colorId || !materialId || !price || !quantity) {
+            if (!productId || !categoryId || !image || !colorId || !materialId || !price) {
                 tools.error(req, res, 'params was not undefine', errorConfig.REQUIRE);
                 return;
             }
@@ -110,6 +110,9 @@ Parse.Cloud.define('saveProductDetail', function (req, res) {
                     var promotion = new Parse.Object('Promotion');
                     promotion.id = promotonId;
                     productDetail.set('promotion', promotion);
+                }
+                else if(promotonId == 'none') {
+                    productDetail.set('promotion', null);
                 }
                 productDetail.set('image', image);
                 productDetail.set('sku', sku);
@@ -134,6 +137,9 @@ Parse.Cloud.define('saveProductDetail', function (req, res) {
                     var promotion = new Parse.Object('Promotion');
                     promotion.id = promotonId;
                     productDetail.set('promotion', promotion);
+                }
+                else if(promotonId == 'none') {
+                    productDetail.set('promotion', null);
                 }
                 productDetail.set('image', image);
                 productDetail.set('sku', sku);

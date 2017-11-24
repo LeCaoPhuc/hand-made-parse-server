@@ -43,7 +43,7 @@ app.get('/test', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/test.html'));
 });
 
-var port = config.port || 1300;
+var port = config.port || 3000;
 var httpServer = require('http').createServer(app);
 httpServer.listen(port, function () {
   // console.log('parse-server-example running on port ' + port + '.');

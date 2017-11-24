@@ -77,6 +77,7 @@ Parse.Cloud.define('viewNotify', function(req,res) {
     }
    var Notify = new Parse.Object.extend('Notify');
    var notify = new Notify();
+   notify.id = id;
    notify.set('viewed',true);
    notify.save(null,{useMasterKey: true})
    .then(function(result){

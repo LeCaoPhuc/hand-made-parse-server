@@ -216,7 +216,8 @@ Parse.Cloud.define('changeDeliveryStatus',function(req,res){
         .then(function(result){
             if(result) {
                 order = result;
-                var query = new Parse.Query('OrderDetail')
+                var query = new Parse.Query('OrderDetail');
+                query.equalTo('order',order);
                 query.include('product_detail');
                 query.notEqualTo('status', 'delete');
                 return query.find()
@@ -383,7 +384,7 @@ Parse.Cloud.define('deleteOrder',function(req,res){
             Parse.Object.saveAll(results)
             .then(function(result){
                 order.set('status','delete');
-                order.save({useMasterKey: true})
+                order.save(null,{useMasterKey: true})
                 .then(function(response){
                      tools.success(req,res,'delete order success',result);
                 })
