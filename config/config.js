@@ -3,7 +3,7 @@ var env = process.env.ENV || 'local'
 , configs = {};
 
 // var url = 'http://192.168.43.231:';
-var url = 'http://192.168.1.43:';
+var url = 'http://192.168.1.38:';
 configs.dev = {
     
     port: 3000,

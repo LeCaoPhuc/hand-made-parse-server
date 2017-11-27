@@ -13,6 +13,7 @@ Parse.Cloud.define('getCategoryList', function(req,res){
     var query = new Parse.Query('Category');
     var limit = req.params.limit;
     var page = req.params.page;
+    var isAdmin = req.params.isAdmin;
     if(!limit || !page) {
         tools.error(req,res, 'params was not undefine', errorConfig.REQUIRE);
     }
@@ -28,8 +29,10 @@ Parse.Cloud.define('getCategoryList', function(req,res){
             return;
         }
     }
-    query.notContainedIn('status', ['delete','block']);
-    query.notEqualTo('count_product',0);
+    query.notContainedIn('status', ['delete']);
+    if(!isAdmin) {
+        query.notEqualTo('count_product',0);
+    }
     query.limit(limit);
     query.skip((page-1)*limit);
     query.find({
@@ -88,5 +91,28 @@ Parse.Cloud.define('saveCategory',function(req,res){
     })
     .catch(function(err) {
         tools.error(req,res,'error catch save category',errorConfig.ACTION_FAIL,err);
+    })
+})
+
+Parse.Cloud.define('getCategoryWithId',function(req,res) {
+    if(!req.user) {
+        tools.notLogin(req,res);
+        return;
+    }
+    var id = req.params.id;
+    if(!id) {
+        tools.error(req,res,'id was not undefine',errorConfig.REQUIRE);
+        return;
+    }
+    var query = new Parse.Query('Category');
+    query.notEqualTo('status','delete');
+    query.get(id, {useMasterKey: true})
+    .then(function(response){
+        if(response) {
+            tools.success(req,res,'get category success',response);
+        }
+    })
+    .catch(function(err){
+        tools.error(req,res,'fail inside catch',errorConfig.ACTION_FAIL,err);
     })
 })
