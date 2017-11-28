@@ -53,7 +53,7 @@ Parse.Cloud.define('saveProduct', function (req, res) {
                     if (results && results.length > 0) {
                         for (var i in results) {
                             results[i].set('category', category);
-                            product.set('status', status);
+                             results[i].set('status', status);
                             arrPromise.push(results[i].save(null, { useMasterKey: true }))
                         }
                         return Promise.all(arrPromise)
@@ -63,7 +63,30 @@ Parse.Cloud.define('saveProduct', function (req, res) {
                     }
                 })
                 .then(function (response) {
-                    if (response) {
+                    if (response && response.length > 0) {
+                        var response = response;
+                        var result =response[0];
+                        var category = result.get('category');
+                        var query = new Parse.Query('ProductDetail');
+                        query.equalTo('category',category);
+                        query.notContainedIn('status',['delete','block']);
+                        query.count()
+                        .then(function(count){
+                            category.set('count_product',count);
+                            category.save(null,{useMasterKey: true})
+                            .then(function(responses){
+                                    tools.success(req, res, 'save productDetail success', response);
+                            })
+                            .catch(function(err){
+                                tools.error(req, res, 'faild in catch saveProductDetail-getCategory-saveCategroy', errorConfig.ACTION_FAIL, err);
+                            })
+                        })
+                        .catch(function(err){
+                            tools.error(req, res, 'faild in catch countProductDetail', errorConfig.ACTION_FAIL, err);
+                        })
+                        
+                    }
+                    else {
                         tools.success(req, res, 'save update product success', response);
                     }
                 })
@@ -92,6 +115,7 @@ Parse.Cloud.define('saveProductDetail', function (req, res) {
             var quantity = req.params.quantity;
             var status = req.params.status;
             var id = req.params.id;
+            var isEdit = false;
             if (!productId || !categoryId || !image || !colorId || !materialId || !price) {
                 tools.error(req, res, 'params was not undefine', errorConfig.REQUIRE);
                 return;
@@ -99,10 +123,14 @@ Parse.Cloud.define('saveProductDetail', function (req, res) {
             var ProductDetail = new Parse.Object.extend('ProductDetail');
             var productDetail = new ProductDetail();
             if (id) {
+                isEdit = true;
                 productDetail.id = id;
                 var color = new Parse.Object('Color');
                 color.id = colorId;
                 productDetail.set('color', color);
+                var category = new Parse.Object('Category');
+                category.id = categoryId;
+                productDetail.set('category', category);
                 var material = new Parse.Object('Material');
                 material.id = materialId;
                 productDetail.set('material', material);
@@ -149,7 +177,50 @@ Parse.Cloud.define('saveProductDetail', function (req, res) {
             }
             productDetail.save(null, { useMasterKey: true })
                 .then(function (result) {
-                    tools.success(req, res, 'save productDetail success', result);
+                    var result =result;
+                    var category = result.get('category');
+                    var query = new Parse.Query('ProductDetail');
+                    query.equalTo('category',category);
+                    query.notContainedIn('status',['delete','block']);
+                    query.count()
+                    .then(function(count){
+                        category.set('count_product',count);
+                        category.save(null,{useMasterKey: true})
+                        .then(function(responses){
+                                tools.success(req, res, 'save productDetail success', result);
+                        })
+                        .catch(function(err){
+                            tools.error(req, res, 'faild in catch saveProductDetail-getCategory-saveCategroy', errorConfig.ACTION_FAIL, err);
+                        })
+                    })
+                    .catch(function(err){
+                          tools.error(req, res, 'faild in catch countProductDetail', errorConfig.ACTION_FAIL, err);
+                    })
+                    // if(!isEdit) {
+                    //     var result =result;
+                    //     var category = result.get('category');
+                    //     var query = new Parse.Query('Category');
+                    //     query.get(result.get('category').id)
+                    //     .then(function(response) {
+                    //         if(response) {
+                    //             response.set('count_product',response.get('count_product')+1);
+                    //             response.save(null,{useMasterKey: true})
+                    //             .then(function(responses){
+                    //                  tools.success(req, res, 'save productDetail success', result);
+                    //             })
+                    //             .catch(function(err){
+                    //                 tools.error(req, res, 'faild in catch saveProductDetail-getCategory-saveCategroy', errorConfig.ACTION_FAIL, err);
+                    //             })
+                    //         }
+                           
+                    //     })
+                    //     .catch(function(err){
+                    //           tools.error(req, res, 'faild in catch saveProductDetail-getCategory', errorConfig.ACTION_FAIL, err);
+                    //     })
+                    // }
+                    // else {
+
+                    // }
                 })
                 .catch(function (err) {
                     tools.error(req, res, 'faild in catch saveProductDetail', errorConfig.ACTION_FAIL, err);
@@ -198,6 +269,12 @@ Parse.Cloud.define('getProductListWithCategory', function (req, res) {
     query.skip((page - 1) * limit);
     query.find()
         .then(function (results) {
+            var arrResult = [];
+            for(var i in results) {
+                if(results[i].get('product').get('status') != 'block') {
+                    arrResult.push(results[i])
+                }   
+            }
             tools.success(req, res, 'get product list success', results);
         })
         .catch(function (err) {
@@ -226,7 +303,7 @@ Parse.Cloud.define('getCountProductWithCategory', function (req, res) {
         })
 })
 
-Parse.Cloud.define('getProductDetailWithId', function (req, res) { // == search with SKU
+Parse.Cloud.define('getProductDetailWithId', function (req, res) { 
     if (!req.user) {
         tools.notLogin(req, res);
         return;
@@ -234,6 +311,7 @@ Parse.Cloud.define('getProductDetailWithId', function (req, res) { // == search 
     var productId = req.params.id;
     var limit = req.params.limit;
     var page = req.params.page;
+    var isAdmin = req.params.isAdmin;
     if (!limit || !page) {
         tools.error(req, res, 'params was not undefine', errorConfig.REQUIRE);
         return;
@@ -259,7 +337,12 @@ Parse.Cloud.define('getProductDetailWithId', function (req, res) { // == search 
     productDetailQuery.include('color');
     productDetailQuery.include('material');
     productDetailQuery.include('promotion');
-    productDetailQuery.notContainedIn('status', ['delete', 'block']);
+    if(isAdmin) {
+        productDetailQuery.notContainedIn('status', ['delete']);
+    }
+    else {
+        productDetailQuery.notContainedIn('status', ['delete', 'block']);
+    }
     productDetailQuery.find()
         .then(function (results) {
             if (results.length > limit) { // if results.length  > limit => have more product => last = false else last = true
@@ -276,7 +359,7 @@ Parse.Cloud.define('getProductDetailWithId', function (req, res) { // == search 
         })
 })
 
-Parse.Cloud.define('getProductDetailWithSKU', function (req, res) {
+Parse.Cloud.define('getProductDetailWithSKU', function (req, res) { // == search with SKU
     if (!req.user) {
         tools.notLogin(req, res);
         return;
@@ -422,11 +505,22 @@ Parse.Cloud.define('deleteProductDetail', function (req, res) {
         return;
     }
     var query = new Parse.Query('ProductDetail');
+    query.include('category');
     query.get(req.params.id).then(function (product) {
         if (product) {
+            var product = product;
             product.set('status','delete');
             product.save(null,{useMasterKey: true}).then(function () {
-                tools.success(req, res, 'delete product detail success');
+                var category = product.get('category');
+                category.set('count_product',category.get('count_product')-1); //giảm so luong c ount product sxuong 1
+                category.save(null,{useMasterKey: true})
+                .then(function(response){
+                     tools.success(req, res, 'delete product detail success');
+                })
+                .catch(function(err){
+                     tools.error(req, res, 'delete product detail error in set product count', err);
+                })
+               
             }).catch(function (err) {
                 tools.error(req, res, 'delete product detail error', err);
             })
@@ -455,7 +549,24 @@ Parse.Cloud.define('deleteProduct', function (req, res) {
                 Parse.Object.saveAll(products).then(function () {
                     product.set('status','delete');
                     product.save(null,{useMasterKey: true}).then(function () {
-                        tools.success(req, res, 'delete product detail success');
+                        var category = product.get('category');
+                        var query = new Parse.Query('ProductDetail');
+                        query.equalTo('category',category);
+                        query.notContainedIn('status',['delete','block']);
+                        query.count()
+                        .then(function(count){
+                            category.set('count_product',count);
+                            category.save(null,{useMasterKey: true})
+                            .then(function(responses){
+                                   tools.success(req, res, 'delete product success');
+                            })
+                            .catch(function(err){
+                                tools.error(req, res, 'faild in catch saveProductDetail-getCategory-saveCategroy', errorConfig.ACTION_FAIL, err);
+                            })
+                        })
+                        .catch(function(err){
+                            tools.error(req, res, 'faild in catch countProductDetail', errorConfig.ACTION_FAIL, err);
+                        }) 
                     }).catch(function (err) {
                         tools.error(req, res, 'delete product detail error', err);
                     })
