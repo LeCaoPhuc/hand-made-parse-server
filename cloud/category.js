@@ -33,7 +33,7 @@ Parse.Cloud.define('getCategoryList', function(req,res){
     if(!isAdmin) {
         query.notEqualTo('count_product',0);
     }
-    query.addAscending('createdAt');
+    query.addAscending('category_name');
     query.limit(limit);
     query.skip((page-1)*limit);
     query.find({
